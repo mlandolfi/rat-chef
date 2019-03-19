@@ -4,7 +4,7 @@ from AllStocks import ALL_STOCKS
 class StockManager(object):
 
 	def __init__(self):
-		
+		self.allStocks = ALL_STOCKS
 
 	"""Returns a list of the most volatile stock"""
 	def mostVolatileStocks():
@@ -15,7 +15,7 @@ class StockManager(object):
 				highestVolatility = stock.volatility
 				retList.clear()
 				retList.append(stock)
-			elif stock.volatility = highestVolatility:
+			elif stock.volatility == highestVolatility:
 				retList.append(stock)
 		return retList
 
@@ -25,7 +25,7 @@ class StockManager(object):
 		retList = [] #may change to a set
 		for stock in self.allStocks:
 			stock.updateVolatility() #for real time
-			if stock.volatility = volatility:
+			if stock.volatility == volatility:
 				retList.append(stock)
 		return retList
 
@@ -39,6 +39,11 @@ class StockManager(object):
 	has to be compared to its previous volumes because each stock is different
 	high volume stocks just mean that it's traded a lot, which can be good or bad"""
 	def pullStocksWithHighVolume():
+		pass
 		#take each stocks volume std deviation, compare how far it is from std dev
 
-	
+	def __str__(self):
+		retString = ""
+		for name, obj in self.allStocks.items():
+			retString += "name: " + name +  " obj: " + str(obj) + "\n"
+		return retString

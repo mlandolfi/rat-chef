@@ -56,7 +56,10 @@ class Stock(object):
 		pass
 
 	def updateVolumeDeviationPercentage():
+		# key is time (second part of time), value is (value, volume)
 		tempList = []
 		for time in self.values:
-			tempList.append(time[1])
-
+			tempList.append(time[1]) #append
+			
+	def __str__(self):
+		return self.symbol
