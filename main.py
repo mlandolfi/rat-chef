@@ -11,14 +11,15 @@ API_KEY = "878U8SIR8IMVPVQ6"
 # main function starting point
 def main():
 
-	temp = Stock('GOOGL')
-	temp.saveValues()
+	googleStock = Stock('GOOGL', 'googleValues.txt')
 
 	# boiler plate for getting data
-	# ts = TimeSeries(key=API_KEY)
-	# data, metaData = ts.get_intraday(symbol="GOOGL", interval="1min")
-	# for dataKey in data:
-	# 	print (dataKey, data[dataKey])
+	ts = TimeSeries(key=API_KEY)
+	data, metaData = ts.get_intraday(symbol="GOOGL", interval="1min")
+	for dataKey in data:
+		googleStock.addValueToday(dataKey.split(" ")[1], data[dataKey]["4. close"], data[dataKey]["5. volume"])
+		# print (dataKey, data[dataKey])
+	googleStock.saveValues()
 
 
 # runs the main() function
