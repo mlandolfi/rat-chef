@@ -1,7 +1,7 @@
 # file to hold stocks class to store stock data
 import json
 import datetime
-
+import statistics
 
 class Stock(object):
 
@@ -13,7 +13,7 @@ class Stock(object):
 		self.previousValues = {}	# key is date, value is value {} ^^
 		self.volumeDeviationPercentage = 0
 		# functions to execute on instantiation
-		# self.readValues()
+		self.readValues()
 
 	""" adds a time and value into self.values if it isn't already in there,
 		also sets the self.lastValueRecorded to a tuple of (time, value, volume) """
@@ -54,14 +54,21 @@ class Stock(object):
 				for time, value in dayValues.items():
 					self.addPreviousValues(day, time, value[0], value[1])
 
-	def updateVolatility():
+	def updateVolatility(self):
 		pass
 
-	def updateVolumeDeviationPercentage():
+	"""Calculates volumeDeviationPercentage using volumes from today and the past"""
+	def updateVolumeDeviationPercentage(self):
 		# key is time (second part of time), value is (value, volume)
 		tempList = []
-		for time in self.values:
-			tempList.append(time[1]) #append
+		for time, valueTuple in self.values.items():
+			tempList.append(int(valueTuple[1])) #append volume
+		#self.previousValues = {}	# key is date, value is value {} ^^
+		for day, dayValues in self.previousValues.items():
+			for time, value in dayValues.items():
+				tempList.append(int(value[1])) #appending volume
+		stdDev = statistics.stdev(tempList)
+		print(stdDev)
 
 	def __str__(self):
 		return self.symbol

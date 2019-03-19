@@ -2,9 +2,10 @@
 from alpha_vantage.timeseries import TimeSeries
 import time
 import datetime
-
+import statistics
 from StockManager import StockManager
 from Stocks import Stock
+from AllStocks import ALL_STOCKS
 
 # Constants
 API_KEY = "878U8SIR8IMVPVQ6"
@@ -12,9 +13,18 @@ API_KEY = "878U8SIR8IMVPVQ6"
 
 # main function starting point
 def main():
+	# ts = TimeSeries(key=API_KEY)
+	# for key, stock in ALL_STOCKS.items():
+	# 	data, metaData = ts.get_intraday(symbol=stock.symbol, interval="1min")
+	# 	for dataKey in data:
+	# 		stock.addValueToday(dataKey.split(" ")[1], data[dataKey]["4. close"], data[dataKey]["5. volume"])
+	# 	stock.saveValues()
+
+	
 
 	manager = StockManager()
 	print(manager)
+	manager.pullStocksWithHighVolume()
 
 
 	# boiler plate for getting data

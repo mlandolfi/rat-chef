@@ -7,7 +7,7 @@ class StockManager(object):
 		self.allStocks = ALL_STOCKS
 
 	"""Returns a list of the most volatile stock"""
-	def mostVolatileStocks():
+	def mostVolatileStocks(self):
 		retList = [] #may change to a set
 		highestVolatility = 0
 		for stock in self.allStocks:
@@ -21,7 +21,7 @@ class StockManager(object):
 
 	"""Given a volatility level from 0-10, 
 	returns a list of stocks with given volatility level """
-	def pullStocksWithGivenVolatility(volatility):
+	def pullStocksWithGivenVolatility(self, volatility):
 		retList = [] #may change to a set
 		for stock in self.allStocks:
 			stock.updateVolatility() #for real time
@@ -31,15 +31,16 @@ class StockManager(object):
 
 	"""Compare a given stocks volatility to its volatility on previous days
 	returns true if more volatile than previous days, false otherwise"""
-	def compareVolatilityToPreviousDays(stock):
+	def compareVolatilityToPreviousDays(self, stock):
 		stock.updateVolatility()
 		pass
 
 	"""Return a list of stocks with high volume
 	has to be compared to its previous volumes because each stock is different
 	high volume stocks just mean that it's traded a lot, which can be good or bad"""
-	def pullStocksWithHighVolume():
-		pass
+	def pullStocksWithHighVolume(self):
+		for stock, stockObj in self.allStocks.items():
+			stockObj.updateVolumeDeviationPercentage()
 		#take each stocks volume std deviation, compare how far it is from std dev
 
 	def __str__(self):
