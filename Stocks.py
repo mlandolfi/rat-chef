@@ -15,22 +15,28 @@ class Stock(object):
 		# functions to execute on instantiation
 		# self.readValues()
 
+	"""adds a time and value into self.values if it isn't already in there"""
 	def addValueToday(self, time, value, volume):
 		if (not time in self.values.keys()):
 			self.values[time] = (value, volume)
 
+	""" adds a time and value into self.values[day], won't add duplicates """
 	def addPreviousValues(self, day, time, value, volume):
 		if (not day in self.previousValues.keys()):
 			self.previousValues[day] = {}
 		if (not time in self.previousValues[day].keys()):
 			self.previousValues[day][time] = (value, volume)
 
+	""" combines previous values and the current days values and saves
+		them to a self.dataFile """
 	def saveValues(self):
 		data = self.previousValues
 		data[datetime.date.today().strftime('%Y-%m-%d')] = self.values
 		with open(self.dataFile, "w") as outFile:
 			json.dump(data, outFile)
 
+	""" reads in values from self.dataFile and populates self.values
+		and self.previousValues properly """
 	def readValues(self):
 		with open(self.dataFile) as inFile:
 			data = json.load(inFile)
@@ -54,4 +60,3 @@ class Stock(object):
 		for time in self.values:
 			tempList.append(time[1])
 
-	
