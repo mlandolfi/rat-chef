@@ -11,8 +11,10 @@ from AllStocks import ALL_STOCKS
 API_KEY = "878U8SIR8IMVPVQ6"
 
 
+
 # main function starting point
 def main():
+
 	# ts = TimeSeries(key=API_KEY)
 	# for key, stock in ALL_STOCKS.items():
 	# 	data, metaData = ts.get_intraday(symbol=stock.symbol, interval="5min", outputsize="full")
@@ -22,9 +24,10 @@ def main():
 
 
 
-	manager = StockManager()
-	print(manager)
-	manager.pullStocksWithHighVolume()
+
+	# manager = StockManager()
+	# print(manager)
+	# manager.pullStocksWithHighVolume()
 
 
 	# boiler plate for getting data

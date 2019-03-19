@@ -56,11 +56,11 @@ class Stock(object):
 		# key is time (second part of time), value is (value, volume)
 		tempList = []
 		for time, valueTuple in self.values.items():
-			tempList.append(int(valueTuple[1])) #append volume
+			tempList.append(valueTuple[1]) #append volume
 		#self.previousValues = {}	# key is date, value is value {} ^^
 		for day, dayValues in self.previousValues.items():
 			for time, value in dayValues.items():
-				tempList.append(int(value[1])) #appending volume
+				tempList.append(value[1]) #appending volume
 		stdDev = statistics.stdev(tempList)
 		print(stdDev)
 
