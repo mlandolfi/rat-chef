@@ -1,6 +1,7 @@
 # https://github.com/RomelTorres/alpha_vantage	<--- the docs for alpha vantage wrapper
 from alpha_vantage.timeseries import TimeSeries
 import time
+import datetime
 
 from Stocks import Stock
 
@@ -13,13 +14,17 @@ def main():
 
 	googleStock = Stock('GOOGL', 'googleValues.txt')
 
+
 	# boiler plate for getting data
-	ts = TimeSeries(key=API_KEY)
-	data, metaData = ts.get_intraday(symbol="GOOGL", interval="1min")
-	for dataKey in data:
-		googleStock.addValueToday(dataKey.split(" ")[1], data[dataKey]["4. close"], data[dataKey]["5. volume"])
-		# print (dataKey, data[dataKey])
-	googleStock.saveValues()
+	# ts = TimeSeries(key=API_KEY)
+	# data, metaData = ts.get_intraday(symbol="GOOGL", interval="1min")
+	# for dataKey in data:
+	# 	googleStock.addValueToday(dataKey.split(" ")[1], data[dataKey]["4. close"], data[dataKey]["5. volume"])
+	# 	# print (dataKey, data[dataKey])
+	# googleStock.saveValues()
+	googleStock.readValues()
+	for key, value in googleStock.values.items():
+		print (key, value)
 
 
 # runs the main() function

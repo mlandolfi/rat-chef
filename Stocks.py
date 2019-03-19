@@ -11,6 +11,7 @@ class Stock(object):
 		self.values = {}	# key is time, value is (value, volume)
 		self.dataFile = dataFile
 		self.previousValues = {}	# key is date, value is value {} ^^
+		self.volumeDeviationPercentage = 0
 		# functions to execute on instantiation
 		# self.readValues()
 
@@ -26,7 +27,7 @@ class Stock(object):
 
 	def saveValues(self):
 		data = self.previousValues
-		data[datetime.datetime.now().isoformat()] = self.values
+		data[datetime.date.today().strftime('%Y-%m-%d')] = self.values
 		with open(self.dataFile, "w") as outFile:
 			json.dump(data, outFile)
 
@@ -35,14 +36,22 @@ class Stock(object):
 			data = json.load(inFile)
 		for day, dayValues in data.items():
 			# key ex. 2019-24-03, value ex. {  }
-			if (day == datetime.datetime.now().isoformat()):
+			if (day == datetime.date.today().strftime('%Y-%m-%d')):
 				# first if it's today value
-				for time, value in dayValues:
+				for time, value in dayValues.items():
 					self.addValueToday(time, value[0], value[1])
 			else:
 				# now if it's a previous day
 				self.previousValues[day] = {}
 				for time, value in dayValues.items():
 					self.addPreviousValues(day, time, value[0], value[1])
+
+	def updateVolatility():
+		pass
+
+	def updateVolumeDeviationPercentage():
+		tempList = []
+		for time in self.values:
+			tempList.append(time[1])
 
 	
