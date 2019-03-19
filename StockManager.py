@@ -1,4 +1,5 @@
 import statistics
+from AllStocks import ALL_STOCKS
 
 class StockManager(object):
 
