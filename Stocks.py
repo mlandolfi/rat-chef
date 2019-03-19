@@ -15,9 +15,11 @@ class Stock(object):
 		# functions to execute on instantiation
 		# self.readValues()
 
-	"""adds a time and value into self.values if it isn't already in there"""
+	""" adds a time and value into self.values if it isn't already in there,
+		also sets the self.lastValueRecorded to a tuple of (time, value, volume) """
 	def addValueToday(self, time, value, volume):
 		if (not time in self.values.keys()):
+			self.lastValueRecorded = (time, value, volume)
 			self.values[time] = (value, volume)
 
 	""" adds a time and value into self.values[day], won't add duplicates """
@@ -60,6 +62,6 @@ class Stock(object):
 		tempList = []
 		for time in self.values:
 			tempList.append(time[1]) #append
-			
+
 	def __str__(self):
 		return self.symbol
