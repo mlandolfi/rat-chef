@@ -16,18 +16,19 @@ class Stock(object):
 		self.readValues()
 
 	""" adds a time and value into self.values if it isn't already in there,
-		also sets the self.lastValueRecorded to a tuple of (time, value, volume) """
-	def addValueToday(self, time, value, volume):
-		if (not time in self.values.keys()):
-			self.lastValueRecorded = (time, value, volume)
-			self.values[time] = (value, volume)
+		also sets the self.lastValueRecorded to a tuple of (time, value, volume)
+		if it's from a previous day it adds it to the previous day """
+	def addValue(self, time, value, volume, day):
+		if (day == datetime.date.today().strftime('%Y-%m-%d')):	# today so add it to self.values
+			if (not time in self.values.keys()):
+				self.lastValueRecorded = (time, value, volume)
+				self.values[time] = (value, volume)
+		else:	# not today so previous value
+			if (not day in self.previousValues.keys()):
+				self.previousValues[day] = {}
+			if (not time in self.previousValues[day].keys()):
+				self.previousValues[day][time] = (value, volume)
 
-	""" adds a time and value into self.values[day], won't add duplicates """
-	def addPreviousValues(self, day, time, value, volume):
-		if (not day in self.previousValues.keys()):
-			self.previousValues[day] = {}
-		if (not time in self.previousValues[day].keys()):
-			self.previousValues[day][time] = (value, volume)
 
 	""" combines previous values and the current days values and saves
 		them to a self.dataFile """
@@ -44,15 +45,8 @@ class Stock(object):
 			data = json.load(inFile)
 		for day, dayValues in data.items():
 			# key ex. 2019-24-03, value ex. {  }
-			if (day == datetime.date.today().strftime('%Y-%m-%d')):
-				# first if it's today value
-				for time, value in dayValues.items():
-					self.addValueToday(time, value[0], value[1])
-			else:
-				# now if it's a previous day
-				self.previousValues[day] = {}
-				for time, value in dayValues.items():
-					self.addPreviousValues(day, time, value[0], value[1])
+			for time, value in dayValues.items():
+				self.addValue(time, float(value[0]), float(value[1]), day)
 
 	def updateVolatility(self):
 		pass
@@ -65,6 +59,7 @@ class Stock(object):
 			tempList.append(int(valueTuple[1])) #append volume
 		#self.previousValues = {}	# key is date, value is value {} ^^
 		for day, dayValues in self.previousValues.items():
+			print("!!!!")
 			for time, value in dayValues.items():
 				tempList.append(int(value[1])) #appending volume
 		stdDev = statistics.stdev(tempList)
