@@ -14,6 +14,7 @@ API_KEY = "878U8SIR8IMVPVQ6"
 
 # main function starting point
 def main():
+<<<<<<< HEAD
 	ts = TimeSeries(key=API_KEY)
 	for key, stock in ALL_STOCKS.items():
 		data, metaData = ts.get_intraday(symbol=stock.symbol, interval="5min")
@@ -21,8 +22,16 @@ def main():
 			print (dataKey, data)
 			stock.addValueToday(dataKey.split(" ")[1], data[dataKey]["4. close"], data[dataKey]["5. volume"])
 		stock.saveValues()
+=======
+	# ts = TimeSeries(key=API_KEY)
+	# for key, stock in ALL_STOCKS.items():
+	# 	data, metaData = ts.get_intraday(symbol=stock.symbol, interval="5min", outputsize="full")
+	# 	for dataKey, item in data.items():
+	# 		stock.addValue(dataKey.split(" ")[1], item["4. close"], item["5. volume"], dataKey.split(" ")[0])
+	# 	stock.saveValues()
+>>>>>>> 5bc151941736eaedff0876023e270d8a31325a13
 
-	
+
 
 	# manager = StockManager()
 	# print(manager)
