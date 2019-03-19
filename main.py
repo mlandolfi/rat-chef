@@ -2,19 +2,23 @@
 from alpha_vantage.timeseries import TimeSeries
 import time
 
+from Stocks import Stock
+
 # Constants
 API_KEY = "878U8SIR8IMVPVQ6"
 
 
 # main function starting point
 def main():
-	
+
+	temp = Stock('GOOGL')
+	temp.saveValues()
 
 	# boiler plate for getting data
-	ts = TimeSeries(key=API_KEY)
-	data, metaData = ts.get_intraday(symbol="GOOGL", interval="5min")
-	for dataKey in data:
-		print (dataKey, data[dataKey])
+	# ts = TimeSeries(key=API_KEY)
+	# data, metaData = ts.get_intraday(symbol="GOOGL", interval="1min")
+	# for dataKey in data:
+	# 	print (dataKey, data[dataKey])
 
 
 # runs the main() function
