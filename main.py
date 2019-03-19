@@ -3,6 +3,7 @@ from alpha_vantage.timeseries import TimeSeries
 import time
 import datetime
 
+from StockManager import StockManager
 from Stocks import Stock
 
 # Constants
@@ -12,7 +13,8 @@ API_KEY = "878U8SIR8IMVPVQ6"
 # main function starting point
 def main():
 
-	googleStock = Stock('GOOGL', 'googleValues.txt')
+	manager = StockManager()
+	print(manager)
 
 
 	# boiler plate for getting data
@@ -22,9 +24,9 @@ def main():
 	# 	googleStock.addValueToday(dataKey.split(" ")[1], data[dataKey]["4. close"], data[dataKey]["5. volume"])
 	# 	# print (dataKey, data[dataKey])
 	# googleStock.saveValues()
-	googleStock.readValues()
-	for key, value in googleStock.values.items():
-		print (key, value)
+	#googleStock.readValues()
+	#for key, value in googleStock.values.items():
+	#	print (key, value)
 
 
 # runs the main() function
