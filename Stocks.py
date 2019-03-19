@@ -8,7 +8,7 @@ class Stock(object):
 	def __init__(self, symbol, dataFile):
 		self.symbol = symbol
 		self.volatility = 5	# 0-10
-		self.values = {}	# key is time, value is (value, volume)
+		self.values = {}	# key is time (second part of time), value is (value, volume)
 		self.dataFile = dataFile
 		self.previousValues = {}	# key is date, value is value {} ^^
 		self.volumeDeviationPercentage = 0
