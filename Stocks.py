@@ -16,6 +16,7 @@ class Stock(object):
 		self.volatility = 5	# 0-10
 		self.values = {}	# key is time (second part of time), value is (value, volume)
 		self.dataFile = dataFile
+		self.dailyValuesInXY = False
 		self.lastValueRecorded = ()
 		self.previousValues = {}	# key is date, value is value {} ^^
 		self.populationMeans = () #(volatility, volume) -> means of all recorded volatilities and volumes, including today
@@ -38,6 +39,19 @@ class Stock(object):
 				self.previousValues[day] = {}
 			if (not time in self.previousValues[day].keys()):
 				self.previousValues[day][time] = (value, volume)
+
+	""" returns a list of the daily values in (x,y) format where x is time ex. 9.55
+		and y is the value of the stock at that time
+		if this hasn't been called yet then it'll set self.dailyValuesInXY so it
+		won't have to recalculate it next time """
+	def getDailyValuesInXY(self):
+		if (self.dailyValuesInXY):	return self.dailyValuesInXY
+		xyValues = []
+		for time in self.values:
+			xValue = float(time.split(":")[0] + "." + time.split(":")[1])
+			xyValues.append((xValue, self.values[time][0]))
+		self.dailyValuesInXY = xyValues
+		return xyValues
 
 	""" ############################ Helper functions for update functions ############################ """
 
