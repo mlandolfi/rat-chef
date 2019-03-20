@@ -2,6 +2,7 @@
 import json
 import datetime
 import statistics
+import pandas as pd
 
 class Stock(object):
 
@@ -10,8 +11,9 @@ class Stock(object):
 		self.volatility = 5	# 0-10
 		self.values = {}	# key is time (second part of time), value is (value, volume)
 		self.dataFile = dataFile
+		self.lastValueRecorded = ()
 		self.previousValues = {}	# key is date, value is value {} ^^
-		self.volumeDeviationPercentage = 0
+		self.volumeDeviationPercentage = 0 #most recent volume compared to all previous volumes
 		# functions to execute on instantiation
 		self.readValues()
 
@@ -51,18 +53,30 @@ class Stock(object):
 	def updateVolatility(self):
 		pass
 
-	"""Calculates volumeDeviationPercentage using volumes from today and the past"""
+	"""Function to calculate the percent difference between two values, used for
+	calculating self.volumeDeviationPercentage using the stdDev of all previous volumes
+	and the latest recorded volume """
+	def getChange(self, current, previous):
+		if current == previous:
+			return 0
+		try:
+			return (abs(current - previous) / previous) * 100.0
+		except ZeroDivisionError:
+			return 0 #Not sure if this is the best way to handle division by 0, probably is
+
+	"""Calculates volumeDeviationPercentage using the std dev of all previous volumes
+	and the last recorded volume"""
 	def updateVolumeDeviationPercentage(self):
-		# key is time (second part of time), value is (value, volume)
 		tempList = []
+		#going through all of today's recorded volumes
 		for time, valueTuple in self.values.items():
 			tempList.append(valueTuple[1]) #append volume
-		#self.previousValues = {}	# key is date, value is value {} ^^
-		for day, dayValues in self.previousValues.items():
-			for time, value in dayValues.items():
-				tempList.append(value[1]) #appending volume
-		stdDev = statistics.stdev(tempList)
-		print(stdDev)
+		#going through all of our past day recorded volumes
+		for day, dayValues in self.previousValues.items(): 	
+			for time, valueTuple in dayValues.items():
+				tempList.append(valueTuple[1]) #appending volume
+		stdDev = statistics.stdev(tempList) #standard deviation of all volumes (what is normal)
+		self.volumeDeviationPercentage = self.getChange(self.lastValueRecorded[2], stdDev)
 
 	def __str__(self):
 		return self.symbol
