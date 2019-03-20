@@ -35,15 +35,26 @@ class StockManager(object):
 		stock.updateVolatility()
 		pass
 
-	"""Return a list of stocks with high volume
-	has to be compared to its previous volumes because each stock is different
-	high volume stocks just mean that it's traded a lot, which can be good or bad"""
-	def pullStocksWithHighVolume(self, percentChangeThreshold):
+	"""Return a list of stocks higher/lower than the given zScore threshold
+		index 0 = value, index 1 = volume, higher = true means above zScoreThreshold, false otherwise"""
+	def pullStocksByZScoreThreshold(self, index, zScoreThreshold, higher):
 		retList = []
+		currentList = []
 		for stock, stockObj in self.allStocks.items():
-			stockObj.updateVolumeDeviationPercentage()
-			if stockObj.volumeDeviationPercentage >= percentChangeThreshold:
-				retList.append(stockObj)
+			currentList = stockObj.collectRecordedValues()
+			#need to update populationMean and stdDev before calculating z-score
+			stockObj.updatePopulationMean(index, currentList)
+			stockObj.updateStdDev(index, currentList)
+			stockObj.updateZScore(index, currentList)
+			#if we are looking for a z-score above our treshold
+			if higher is True:
+				if stockObj.zScores[index] >= zScoreThreshold:
+					retList.append(stockObj)
+			#z-score below our threshold
+			else:
+				if stockObj.zScores[index] <= zScoreThreshold:
+					retList.append(stockObj)
+	
 		return retList
 
 	def __str__(self):
