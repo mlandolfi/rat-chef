@@ -4,11 +4,9 @@ import json
 
 class FileManager(object):
 
-	""" initializes a file manager, assumes your Dropbox path is ~/Dropbox,
-		'~' indicates the home directory """
+	""" initializes a file manager, must pass valid dropbox path """
 	def __init__(self, dropboxPath):
 		self.dropboxPath = dropboxPath
-		print (self.dropboxPath)
 
 	""" loads values from the dropbox file into a Stock object, returns True
 		if successfully loaded values and False if errored, will print error message """
