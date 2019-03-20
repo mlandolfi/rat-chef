@@ -22,7 +22,6 @@ class Stock(object):
 		self.stdDevs = () #(volatility, volume) -> numerical value used to indicate how widely individuals in a group vary. If individual observations vary greatly from the group mean, the standard deviation is big; and vice versa.
 		self.zScores = () #(volatility, volume) -> z-score indicates how many standard deviations an element is from the mean, see website in notes for more info
 		# functions to execute on instantiation
-		self.readValues()
 
 	""" ############################ Functions that work with our data files ############################ """
 
@@ -39,24 +38,6 @@ class Stock(object):
 				self.previousValues[day] = {}
 			if (not time in self.previousValues[day].keys()):
 				self.previousValues[day][time] = (value, volume)
-
-	""" combines previous values and the current days values and saves
-		them to a self.dataFile """
-	def saveValues(self):
-		data = self.previousValues
-		data[datetime.date.today().strftime('%Y-%m-%d')] = self.values
-		with open(self.dataFile, "w") as outFile:
-			json.dump(data, outFile)
-
-	""" reads in values from self.dataFile and populates self.values
-		and self.previousValues properly """
-	def readValues(self):
-		with open(self.dataFile) as inFile:
-			data = json.load(inFile)
-		for day, dayValues in data.items():
-			# key ex. 2019-24-03, value ex. {  }
-			for time, value in dayValues.items():
-				self.addValue(time, float(value[0]), float(value[1]), day)
 
 	""" ############################ Helper functions for update functions ############################ """
 
