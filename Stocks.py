@@ -2,7 +2,6 @@
 import json
 import datetime
 import statistics
-import pandas as pd
 
 class Stock(object):
 
