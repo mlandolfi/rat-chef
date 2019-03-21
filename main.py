@@ -45,6 +45,7 @@ def main():
 
 	manager = StockManager()
 	print(manager)
+	manager.testingStocks()
 	#get stocks with a volume change of over 100% compared to their regular std deviation
 	#retList = manager.pullStocksWithHighVolume(100) 
 	#for stock in retList:

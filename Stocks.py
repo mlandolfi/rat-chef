@@ -29,11 +29,11 @@ class Stock(object):
 	def __init__(self, symbol, dataFile):
 		self.symbol = symbol
 		self.volatility = 5	# 0-10
-		self.values = {}	# key is time (second part of time), value is (value, volume)
 		self.dataFile = dataFile
 		self.dailyValuesInXY = False
-		self.lastValueRecorded = ()
+		self.values = {}	# key is time (second part of time), value is (value, volume)
 		self.previousValues = {}	# key is date, value is value {} ^^
+		self.lastValueRecorded = ()
 		self.populationMeans = () #(volatility, volume) -> means of all recorded volatilities and volumes, including today
 		self.stdDevs = () #(volatility, volume) -> numerical value used to indicate how widely individuals in a group vary. If individual observations vary greatly from the group mean, the standard deviation is big; and vice versa.
 		self.zScores = () #(volatility, volume) -> z-score indicates how many standard deviations an element is from the mean, see website in notes for more info
@@ -42,7 +42,7 @@ class Stock(object):
 		# functions to execute on instantiation
 
 	""" ############################ Functions that work with our data files ############################ """
-
+	
 	""" adds a time and value into self.values if it isn't already in there,
 		also sets the self.lastValueRecorded to a tuple of (time, value, volume)
 		if it's from a previous day it adds it to the previous day """
@@ -69,8 +69,6 @@ class Stock(object):
 			xyValues.append((xValue, self.values[time][0]))
 		self.dailyValuesInXY = xyValues
 		return xyValues
-
-	def computeSkewnessLevel(self):
 
 	""" ############################ Helper functions for update functions ############################ """
 
@@ -135,8 +133,7 @@ class Stock(object):
 			m_3temp **= 3 #(x - x_bar)^3
 			m_3Num += m_3temp #sigma (x - x_bar)^3
 		m3 = m_3Num / m_3Denom
-		#m_2 is just stdDev squared
-		m2 = self.stdDevs[index] ** 2 #
+		m2 = self.stdDevs[index] ** 2 #m2 = stdDev^2
 		m2 **= Fraction('3/2')
 		#skewness is m3/m2
 		self.skewness[index] =  m3 / m2
@@ -146,17 +143,19 @@ class Stock(object):
 	negative kurtosis indicates a 'light-tailed' distrubution
 	index is 0 if calculating for volatility, 1 if calc for volume"""
 	def updateKurtosis(self, index):
+		#Need to obtain the list of values for either volatility or volume for calcs
 		currentList = self.collectRecordedValues(index)
+		#Need to update our populationMean and stdDev
 		self.updatePopulationMean(index, currentList)
 		self.updateStdDev(index, currentList)
 
-		num = 0.0
+		num = 0.0 #sigma [(x - x_bar)^4] / n
 		for x in currentList:
 			num_temp = x - self.populationMeans[index]
 			num_temp **= 4
 			num += num_temp
 		num /= len(currentList)
-		denom = self.stdDevs[index] ** 4  ## stdDev^4
+		denom = self.stdDevs[index] ** 4  ## denom = stdDev^4
 		self.kurtosis[index] = num / denom
 
 	def __str__(self):
