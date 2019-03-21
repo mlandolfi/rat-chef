@@ -7,6 +7,19 @@ import statistics
 One would have to divide the standard deviation by the closing price to directly compare volatility for the two securities.
 https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:standard_deviation_volatility
 https://stattrek.com/statistics/dictionary.aspx?definition=z_score
+
+Skewness:
+when the plot is extended towards the right side more, it denotes positive skewness, wherein mode < median < mean. 
+On the other hand, when the plot is stretched more towards the left direction, 
+then it is called as negative skewness and so, mean < median < mode.
+
+any symmetric data should have a skewness near zero. 
+Negative values for the skewness indicate data that are skewed left (longer tail on left side of graph)
+and positive values for the skewness indicate data that are skewed right. (longer tail on right side of graph)
+
+Kurtosis: Measure of the peak of the graph
+
+
 """
 
 class Stock(object):
@@ -22,6 +35,8 @@ class Stock(object):
 		self.populationMeans = () #(volatility, volume) -> means of all recorded volatilities and volumes, including today
 		self.stdDevs = () #(volatility, volume) -> numerical value used to indicate how widely individuals in a group vary. If individual observations vary greatly from the group mean, the standard deviation is big; and vice versa.
 		self.zScores = () #(volatility, volume) -> z-score indicates how many standard deviations an element is from the mean, see website in notes for more info
+		self.skewness = 0 #skewness is a measure of the asymmetry of the probability distribution of a real-valued random variable about its mean
+		self.kurtosis = 0 #the sharpness of the peak of a frequency-distribution curve.
 		# functions to execute on instantiation
 
 	""" ############################ Functions that work with our data files ############################ """
@@ -53,6 +68,8 @@ class Stock(object):
 		self.dailyValuesInXY = xyValues
 		return xyValues
 
+	def computeSkewnessLevel(self):
+
 	""" ############################ Helper functions for update functions ############################ """
 
 	""" returns a list containing all recorded values for this stock if index is 0, 
@@ -63,6 +80,11 @@ class Stock(object):
 		for time, valueTuple in self.values.items():
 			retList.append(valueTuple[index]) 
 		#going through all of our past day recorded volumes
+		for day in self.previousValues:
+			for time
+
+
+
 		for day, dayValues in self.previousValues.items(): 	
 			for time, valueTuple in dayValues.items():
 				retList.append(valueTuple[index]) 
