@@ -35,8 +35,8 @@ class Stock(object):
 		self.populationMeans = () #(volatility, volume) -> means of all recorded volatilities and volumes, including today
 		self.stdDevs = () #(volatility, volume) -> numerical value used to indicate how widely individuals in a group vary. If individual observations vary greatly from the group mean, the standard deviation is big; and vice versa.
 		self.zScores = () #(volatility, volume) -> z-score indicates how many standard deviations an element is from the mean, see website in notes for more info
-		self.skewness = 0 #skewness is a measure of the asymmetry of the probability distribution of a real-valued random variable about its mean
-		self.kurtosis = 0 #the sharpness of the peak of a frequency-distribution curve.
+		self.skewness = () #(volatility, volume) skewness is a measure of the asymmetry of the probability distribution of a real-valued random variable about its mean
+		self.kurtosis = () #(volatility, volume) the sharpness of the peak of a frequency-distribution curve.
 		# functions to execute on instantiation
 
 	""" ############################ Functions that work with our data files ############################ """
@@ -118,10 +118,13 @@ class Stock(object):
 	"""Requires that updatePopulationMean() and updateStdDev() have both been called
 		skewness of a normal distribution is 0
 		negative values for skewness indicate that the data is skewed left
-		positive values for skewness indicate that the data is skewed right"""
-	def updateSkewness(self):
-		#y_bar is mean, s is stdDev, N is number of data points
-		num = 0
+		positive values for skewness indicate that the data is skewed right
+		index is 0 for volatility, 1 if volume"""
+	def updateSkewness(self, index):
+		#skewness = m_3 / (m_2)^(3/2)
+		#m_3 = 
+		m_3Num = 0
+
 		denom = 0
 		
 		self.skewness = 
