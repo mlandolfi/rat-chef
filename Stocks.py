@@ -81,13 +81,14 @@ class Stock(object):
 			retList.append(valueTuple[index]) 
 		#going through all of our past day recorded volumes
 		for day in self.previousValues:
-			for time
-
-
-
+			for time in day:
+				for valueTuple in time:
+					retList.append(valueTuple[index]) ####Mike check this against what's commented
+		"""
 		for day, dayValues in self.previousValues.items(): 	
 			for time, valueTuple in dayValues.items():
 				retList.append(valueTuple[index]) 
+		"""
 		return retList
 
 	"""Calculates z-score for this stock. Requires that self.populationMeans and self.stdDevs 
@@ -113,6 +114,18 @@ class Stock(object):
 		index is 0 if we are finding z-score of values (for volatility), 1 if z-score of volumes"""
 	def updateZScore(self, index, currentList):
 		self.zScores[index] = zScore(index)
+
+	"""Requires that updatePopulationMean() and updateStdDev() have both been called
+		skewness of a normal distribution is 0
+		negative values for skewness indicate that the data is skewed left
+		positive values for skewness indicate that the data is skewed right"""
+	def updateSkewness(self):
+		#y_bar is mean, s is stdDev, N is number of data points
+		num = 0
+		denom = 0
+		
+		self.skewness = 
+
 
 	def __str__(self):
 		return self.symbol
