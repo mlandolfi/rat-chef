@@ -2,6 +2,7 @@
 import json
 import datetime
 import statistics
+from fractions import Fraction
 
 """ notes
 One would have to divide the standard deviation by the closing price to directly compare volatility for the two securities.
@@ -9,6 +10,7 @@ https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:sta
 https://stattrek.com/statistics/dictionary.aspx?definition=z_score
 
 Skewness:
+https://brownmath.com/stat/shape.htm
 when the plot is extended towards the right side more, it denotes positive skewness, wherein mode < median < mean. 
 On the other hand, when the plot is stretched more towards the left direction, 
 then it is called as negative skewness and so, mean < median < mode.
@@ -18,7 +20,7 @@ Negative values for the skewness indicate data that are skewed left (longer tail
 and positive values for the skewness indicate data that are skewed right. (longer tail on right side of graph)
 
 Kurtosis: Measure of the peak of the graph
-
+https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm
 
 """
 
@@ -115,20 +117,47 @@ class Stock(object):
 	def updateZScore(self, index, currentList):
 		self.zScores[index] = zScore(index)
 
-	"""Requires that updatePopulationMean() and updateStdDev() have both been called
-		skewness of a normal distribution is 0
+	"""skewness of a normal distribution is 0
 		negative values for skewness indicate that the data is skewed left
 		positive values for skewness indicate that the data is skewed right
-		index is 0 for volatility, 1 if volume"""
+		index is 0 if caluclating for volatility, 1 if calculating for volume"""
 	def updateSkewness(self, index):
-		#skewness = m_3 / (m_2)^(3/2)
-		#m_3 = 
-		m_3Num = 0
+		currentList = self.collectRecordedValues(index)
+		self.updatePopulationMean(index, currentList)
+		self.updateStdDev(index, currentList)
 
-		denom = 0
-		
-		self.skewness = 
+		#skewness = m_3 / (m_2)^(3/2) ***m2 is just std deviation squared
+		#m_3 = sigma [ (x - x_bar)^3 ] / n
+		m_3Num = 0.0
+		m_3Denom = len(currentList)
+		for x in currentList:
+			m_3temp = x - self.populationMeans[index] # x - x_bar
+			m_3temp **= 3 #(x - x_bar)^3
+			m_3Num += m_3temp #sigma (x - x_bar)^3
+		m3 = m_3Num / m_3Denom
+		#m_2 is just stdDev squared
+		m2 = self.stdDevs[index] ** 2 #
+		m2 **= Fraction('3/2')
+		#skewness is m3/m2
+		self.skewness[index] =  m3 / m2
 
+	"""standard normal distribution has a kurtosis of 0
+	positive kurtosis indicates a 'heavy-tailed' distribution and
+	negative kurtosis indicates a 'light-tailed' distrubution
+	index is 0 if calculating for volatility, 1 if calc for volume"""
+	def updateKurtosis(self, index):
+		currentList = self.collectRecordedValues(index)
+		self.updatePopulationMean(index, currentList)
+		self.updateStdDev(index, currentList)
+
+		num = 0.0
+		for x in currentList:
+			num_temp = x - self.populationMeans[index]
+			num_temp **= 4
+			num += num_temp
+		num /= len(currentList)
+		denom = self.stdDevs[index] ** 4  ## stdDev^4
+		self.kurtosis[index] = num / denom
 
 	def __str__(self):
 		return self.symbol
