@@ -92,8 +92,11 @@ class Stock(object):
 		index is 0 if we are finding z-score of values (for volatility), 1 if z-score of volumes"""
 	def zScore(self, index):
 		#z = (X - μ) / σ, where X is latest recorded value, μ is the population mean, and σ is the standard deviation
-		print("lastRecorded: ", self.lastValueRecorded)
-		return (self.lastValueRecorded[index] - self.means[index]) / self.stdDevs[index]
+		if self.stdDevs[index] is 0:
+			print("Error: dividing by 0 using stdDevs[", index, "]")
+			return 0
+		else:
+			return (self.lastValueRecorded[index] - self.means[index]) / self.stdDevs[index]
 
 	""" ############################ Update stock functions ############################ """
 
@@ -113,15 +116,13 @@ class Stock(object):
 	def updateZScore(self, index, currentList):
 		self.zScores[index] = self.zScore(index)
 
-	"""skewness of a normal distribution is 0
+	"""Requires that updateMeans/updateStdDev have both been called
+		skewness of a normal distribution is 0
 		negative values for skewness indicate that the data is skewed left
 		positive values for skewness indicate that the data is skewed right
 		index is 0 if caluclating for volatility, 1 if calculating for volume"""
 	def updateSkewness(self, index):
 		currentList = self.collectRecordedValues(index)
-		self.updateMean(index, currentList)
-		self.updateStdDev(index, currentList)
-
 		#skewness = m_3 / (m_2)^(3/2) ***m2 is just std deviation squared
 		#m_3 = sigma [ (x - x_bar)^3 ] / n
 		m_3Num = 0.0
@@ -136,17 +137,14 @@ class Stock(object):
 		#skewness is m3/m2
 		self.skewness[index] =  m3 / m2
 
-	"""standard normal distribution has a kurtosis of 0
+	"""Requires that updateMeans/updateStdDev have both been called
+	standard normal distribution has a kurtosis of 0
 	positive kurtosis indicates a 'heavy-tailed' distribution and
 	negative kurtosis indicates a 'light-tailed' distrubution
 	index is 0 if calculating for volatility, 1 if calc for volume"""
 	def updateKurtosis(self, index):
 		#Need to obtain the list of values for either volatility or volume for calcs
 		currentList = self.collectRecordedValues(index)
-		#Need to update our mean and stdDev
-		self.updateMean(index, currentList)
-		self.updateStdDev(index, currentList)
-
 		num = 0.0 #sigma [(x - x_bar)^4] / n
 		for x in currentList:
 			num_temp = x - self.means[index]
