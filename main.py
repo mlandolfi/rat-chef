@@ -31,11 +31,45 @@ def updateData():
 		
 		
 
+""" Updates all stock data, takes a while because we can't access the API too fast,
+	takes roughly 15 secs for each stock it's updating"""
+def updateData():
+	print("Updating %d stocks, time estimate: %d mins" % (len(ALL_STOCKS), len(ALL_STOCKS)*15/60))
+	fileManager = FileManager("../../../Dropbox/")
+	ts = TimeSeries(key=API_KEY)
+	for key, stock in ALL_STOCKS.items():
+		try:
+			fileManager.loadValues(stock)
+			data, metaData = ts.get_intraday(symbol=stock.symbol, interval="5min", outputsize="full")
+			for dataKey, item in data.items():
+				stock.addValue(dataKey.split(" ")[1], item["4. close"], item["5. volume"], dataKey.split(" ")[0])
+			fileManager.storeValues(stock)
+			print ("Updated: %s" % stock.symbol)
+		except Exception as e:
+			print ("Failed to update: %s" % stock.symbol)
+		time.sleep(15)
+
 
 # main function starting point
 def main():
 
-	updateData()
+	# ts = TimeSeries(key=API_KEY)
+	# for key, stock in ALL_STOCKS.items():
+	# 	data, metaData = ts.get_intraday(symbol=stock.symbol, interval="5min", outputsize="full")
+	# 	for dataKey, item in data.items():
+	# 		stock.addValue(dataKey.split(" ")[1], item["4. close"], item["5. volume"], dataKey.split(" ")[0])
+	# 	stock.saveValues()
+
+
+
+
+	manager = StockManager()
+	print(manager)
+	manager.testingStocks()
+	#get stocks with a volume change of over 100% compared to their regular std deviation
+	#retList = manager.pullStocksWithHighVolume(100) 
+	#for stock in retList:
+	#	print(stock)
 
 
 	# manager = StockManager()
