@@ -6,194 +6,321 @@ from StockManager import StockManager
 from Stocks import Stock
 from AllStocks import ALL_STOCKS
 
+#TODO: Need to test if population functions update when adding a stock
+
 class testSuite(object):
 
 	def loadValuesIntoOneStock(self):
 		testStock = Stock('TEST', 'testValues.txt')
-		testStock.values = {
-			"13:00:00" : (10.5, 20.10),
-			"13:15:00" : (20.3, -15.4),
-			"13:30:00" : (5, 14.2)
-		}
 
-		testStock.previousValues = {
-			"2019-03-18" : { "06:00:00" : (0.5, 45.10) },
+		testStock.record = {
+			"2019-03-18" : { "06:00:00" : (0.5, 45.10),
+							  "06:15:00" : (73, 12)  },
 			"2019-03-19" : { "06:15:00" : (83, 12) },
-			"2019-03-20" : { "06:30:00" : (14, -6.0) },
+			"2019-03-20" : { "06:30:00" : (14, -6.0),
+							 "06:31:00" : (18, 9) }
 		}
 		return testStock
 
-	def loadValuesForSkewnessAndKurtosis(self):
+	def loadValsForSkewKurtosis(self):
 		testStock = Stock('TEST', 'testValues.txt')
-		testStock.values = {
-			"13:00:00" : (61, 20.10),
-			"13:00:01" : (61, 20.10),
-			"13:00:02" : (61, 20.10),
-			"13:00:03" : (61, 20.10),
-			"13:00:04" : (61, 20.10),
-			"13:15:01" : (64, -15.4),
-			"13:15:02" : (64, -15.4),
-			"13:15:03" : (64, -15.4),
-			"13:15:04" : (64, -15.4),
-			"13:15:05" : (64, -15.4),
-			"13:15:06" : (64, -15.4),
-			"13:15:07" : (64, -15.4),
-			"13:15:08" : (64, -15.4),
-			"13:15:09" : (64, -15.4),
-			"13:15:10" : (64, -15.4),
-			"13:15:11" : (64, -15.4),
-			"13:15:12" : (64, -15.4),
-			"13:15:13" : (64, -15.4),
-			"13:15:14" : (64, -15.4),
-			"13:15:15" : (64, -15.4),
-			"13:15:16" : (64, -15.4),
-			"13:15:17" : (64, -15.4),
-			"13:15:18" : (64, -15.4),
-			"13:30:01" : (67, 14.2),
-			"13:30:02" : (67, 14.2),
-			"13:30:03" : (67, 14.2),
-			"13:30:04" : (67, 14.2),
-			"13:30:05" : (67, 14.2),
-			"13:30:06" : (67, 14.2),
-			"13:30:07" : (67, 14.2),
-			"13:30:08" : (67, 14.2),
-			"13:30:09" : (67, 14.2),
-			"13:30:10" : (67, 14.2),
-			"13:30:11" : (67, 14.2),
-			"13:30:12" : (67, 14.2),
-			"13:30:13" : (67, 14.2),
-			"13:30:14" : (67, 14.2),
-			"13:30:15" : (67, 14.2),
-			"13:30:16" : (67, 14.2),
-			"13:30:17" : (67, 14.2),
-			"13:30:18" : (67, 14.2),
-			"13:30:19" : (67, 14.2),
-			"13:30:20" : (67, 14.2),
-			"13:30:21" : (67, 14.2),
-			"13:30:22" : (67, 14.2),
-			"13:30:23" : (67, 14.2),
-			"13:30:24" : (67, 14.2),
-			"13:30:25" : (67, 14.2),
-			"13:30:26" : (67, 14.2),
-			"13:30:27" : (67, 14.2),
-			"13:30:28" : (67, 14.2),
-			"13:30:29" : (67, 14.2),
-			"13:30:30" : (67, 14.2),
-			"13:30:31" : (67, 14.2),
-			"13:30:32" : (67, 14.2),
-			"13:30:33" : (67, 14.2),
-			"13:30:34" : (67, 14.2),
-			"13:30:35" : (67, 14.2),
-			"13:30:36" : (67, 14.2),
-			"13:30:37" : (67, 14.2),
-			"13:30:38" : (67, 14.2),
-			"13:30:39" : (67, 14.2),
-			"13:30:40" : (67, 14.2),
-			"13:30:41" : (67, 14.2),
-			"13:30:42" : (67, 14.2),
-			"13:45:01" : (70, 45.10),
-			"13:45:02" : (70, 45.10),
-			"13:45:03" : (70, 45.10),
-			"13:45:04" : (70, 45.10),
-			"13:45:05" : (70, 45.10),
-			"13:45:06" : (70, 45.10),
-			"13:45:07" : (70, 45.10),
-			"13:45:08" : (70, 45.10),
-			"13:45:09" : (70, 45.10),
-			"13:45:10" : (70, 45.10),
-			"13:45:11" : (70, 45.10),
-			"13:45:12" : (70, 45.10),
-			"13:45:13" : (70, 45.10),
-			"13:45:14" : (70, 45.10),
-			"13:45:15" : (70, 45.10),
-			"13:45:16" : (70, 45.10),
-			"13:45:17" : (70, 45.10),
-			"13:45:18" : (70, 45.10),
-			"13:45:19" : (70, 45.10),
-			"13:45:20" : (70, 45.10),
-			"13:45:21" : (70, 45.10),
-			"13:45:22" : (70, 45.10),
-			"13:45:23" : (70, 45.10),
-			"13:45:24" : (70, 45.10),
-			"13:45:25" : (70, 45.10),
-			"13:45:26" : (70, 45.10),
-			"13:45:27" : (70, 45.10),
+		#3 days, 32 mins span
+		testStock.record = {
+			"2019-03-18" : { "06:00:00" : (61, 0),
+								"06:01:00" : (61, 0),
+								"06:02:00" : (61, 0),
+								"06:03:00" : (61, 0),
+								"06:04:00" : (61, 0),
+								"06:05:00" : (64, 0),
+								"06:06:00" : (64, 0),
+								"06:07:00" : (64, 0),
+								"06:08:00" : (64, 0),
+								"06:09:00" : (64, 0),
+								"06:10:00" : (64, 0),
+								"06:11:00" : (64, 0),
+								"06:12:00" : (64, 0),
+								"06:13:00" : (64, 0),
+								"06:14:00" : (64, 0),
+								"06:15:00" : (64, 0),
+								"06:16:00" : (64, 0),
+								"06:17:00" : (64, 0),
+								"06:18:00" : (64, 0),
+								"06:19:00" : (64, 0),
+								"06:20:00" : (64, 0),
+								"06:21:00" : (64, 0),
+								"06:22:00" : (64, 0),
+								"06:23:00" : (67, 0),
+								"06:24:00" : (67, 0),
+								"06:25:00" : (67, 0),
+								"06:26:00" : (67, 0),
+								"06:27:00" : (67, 0),
+								"06:28:00" : (67, 0),
+								"06:29:00" : (67, 0),
+								"06:30:00" : (67, 0),
+								"06:31:00" : (67, 0),
+								"06:32:00" : (67, 0),
+								"06:33:00" : (67, 0),
+								"06:34:00" : (67, 0),
+								"06:35:00" : (67, 0),
+								"06:36:00" : (67, 0),
+								"06:37:00" : (67, 0),
+								"06:38:00" : (67, 0),
+								"06:39:00" : (67, 0),
+								"06:40:00" : (67, 0),
+								"06:41:00" : (67, 0),
+								"06:42:00" : (67, 0),
+								"06:43:00" : (67, 0),
+								"06:44:00" : (67, 0),
+								"06:45:00" : (67, 0),
+								"06:46:00" : (67, 0),
+								"06:47:00" : (67, 0),
+								"06:48:00" : (67, 0),
+								"06:49:00" : (67, 0),
+								"06:50:00" : (67, 0),
+								"06:51:00" : (67, 0),
+								"06:52:00" : (67, 0),
+								"06:53:00" : (67, 0),
+								"06:54:00" : (67, 0),
+								"06:55:00" : (67, 0),
+								"06:56:00" : (67, 0),
+								"06:57:00" : (67, 0),
+								"06:58:00" : (67, 0),
+								"06:59:00" : (67, 0),
+								
+							  						},
+			
+			"2019-03-19" : { "06:15:00" : (73, 0), 
+								"06:16:00" : (73, 0),
+								"06:17:00" : (73, 0),
+								"06:18:00" : (73, 0),
+								"06:19:00" : (73, 0),
+								"06:20:00" : (73, 0),
+								"06:21:00" : (73, 0),
+								"06:22:00" : (73, 0)
+													},
 
+			"2019-03-21" : {	"06:01:00" : (67, 0),
+								"06:02:00" : (67, 0),
+								"06:03:00" : (67, 0),
+								"06:04:00" : (67, 0),
+								"06:05:00" : (67, 0),
+								"06:06:00" : (70, 0),
+								"06:07:00" : (70, 0),
+								"06:08:00" : (70, 0),
+								"06:09:00" : (70, 0),
+								"06:10:00" : (70, 0),
+								"06:11:00" : (70, 0),
+								"06:12:00" : (70, 0),
+								"06:13:00" : (70, 0),
+								"06:14:00" : (70, 0),
+								"06:15:00" : (70, 0),
+								"06:16:00" : (70, 0),
+								"06:17:00" : (70, 0),
+								"06:18:00" : (70, 0),
+								"06:19:00" : (70, 0),
+								"06:20:00" : (70, 0),
+								"06:21:00" : (70, 0),
+								"06:22:00" : (70, 0),
+								"06:23:00" : (70, 0),
+								"06:24:00" : (70, 0),
+								"06:25:00" : (70, 0),
+								"06:26:00" : (70, 0),
+								"06:27:00" : (70, 0),
+								"06:28:00" : (70, 0),
+								"06:29:00" : (70, 0),
+								"06:30:00" : (70, 0),
+								"06:31:00" : (70, 0),
+								"06:32:00" : (70, 0)
+
+													}	
 		}
 
-		testStock.previousValues = {
-			"2019-03-19" : { "06:15:01" : (73, 12) },
-			"2019-03-20" : { "06:15:02" : (73, 12) },
-			"2019-03-21" : { "06:15:03" : (73, 12) },
-			"2019-03-22" : { "06:15:04" : (73, 12) },
-			"2019-03-23" : { "06:15:05" : (73, 12) },
-			"2019-03-24" : { "06:15:06" : (73, 12) },
-			"2019-03-25" : { "06:15:07" : (73, 12) },
-			"2019-03-26" : { "06:15:08" : (73, 12) },
-		}
 		return testStock
+
+	"""============================== Sample Tests =============================="""
+
+	#This test confirms that calculateStartDate, getSampleList work properly
+	def testSampleMean(self):
+		testStock = self.loadValsForSkewKurtosis()
+
+		#Time range is all of our data 
+		endDate = datetime.datetime(2019, 3, 21, 6, 32, 0, 0) #2019-03-21 06:32:00
+		startDate = testStock.calculateStartDate(endDate, 32, 0, 3) #should return 2018-03-18 6:00:00
+		sampleList = testStock.getSampleList(0, startDate, endDate, 1)#here
+		sampleMean = testStock.getSampleMean(sampleList)
+		assert(sampleMean == 67.45)
+		sampleMean = 0.0
+	
+		#Time range is from our latest data to beyond our first data point
+		endDate = datetime.datetime(2019, 3, 21, 6, 32, 0, 0)
+		startDate = testStock.calculateStartDate(endDate, 32, 0, 7) 
+		sampleList = testStock.getSampleList(0, startDate, endDate, 1)
+		sampleMean = testStock.getSampleMean(sampleList)
+		assert(sampleMean == 67.45)
+		sampleMean = 0.0
+
+		#Time range is from beyond our latest data to our earliest data point
+		endDate = datetime.datetime(2019, 3, 22, 6, 32, 0, 0)
+		startDate = testStock.calculateStartDate(endDate, 32, 0, 4) 
+		sampleList = testStock.getSampleList(0, startDate, endDate, 1)
+		sampleMean = testStock.getSampleMean(sampleList)
+		assert(sampleMean == 67.45)
+		sampleMean = 0.0
+
+		#Time range is beyond our latest data and beyond our earliest data
+		endDate = datetime.datetime(2019, 3, 25, 6, 32, 0, 0)
+		startDate = testStock.calculateStartDate(endDate, 32, 0, 20) 
+		sampleList = testStock.getSampleList(0, startDate, endDate, 1)
+		sampleMean = testStock.getSampleMean(sampleList)
+		assert(sampleMean == 67.45)
+	
+	def testSampleStdDev(self):
+		testStock = self.loadValuesIntoOneStock()
+
+		#Time range is all of our data 
+		endDate = datetime.datetime(2019, 3, 21, 6, 32, 0, 0) #2019-03-21 06:32:00
+		startDate = testStock.calculateStartDate(endDate, 32, 0, 3) #should return 2018-03-18 6:00:00
+		sampleList1 = testStock.getSampleList(0, startDate, endDate, 1)#here
+		sampleList2 = testStock.getSampleList(1, startDate, endDate, 1)#here
+		
+		sampleStdDev1 = testStock.getSampleStdDev(sampleList1)
+		sampleStdDev2 = testStock.getSampleStdDev(sampleList2)
+		assert(sampleStdDev1 == 37.52265982043384)
+		assert(sampleStdDev2 == 18.703796406077565)
+	
+	def testSampleZScore(self):
+		testStock = self.loadValuesIntoOneStock()
+
+		#Test 1:
+
+		#Time range does not include march 20th
+		endDate = datetime.datetime(2019, 3, 19, 6, 32, 0, 0) #2019-03-19 06:32:00
+		startDate = testStock.calculateStartDate(endDate, 32, 0, 3) #should return 2018-03-18 6:00:00
+		sampleList1 = testStock.getSampleList(0, startDate, endDate, 1)#here
+		sampleList2 = testStock.getSampleList(1, startDate, endDate, 1)#here
+		sampleMean1 = testStock.getSampleMean(sampleList1) 	#52.166666666667
+		sampleMean2 = testStock.getSampleMean(sampleList2) #23.03333
+		sampleStdDev1 = testStock.getSampleStdDev(sampleList1) #45.023142197467
+		sampleStdDev2 = testStock.getSampleStdDev(sampleList2) #19.11
+
+		sampleZScore1 = testStock.getSampleZScore(10, sampleList1, sampleMean1, sampleStdDev1)
+		sampleZScore2 = testStock.getSampleZScore(10, sampleList2, sampleMean2, sampleStdDev2)
+		assert(sampleZScore1 == -0.9365553937068161)
+		assert(sampleZScore2 == -0.6820059071091955)
+
+		#Test 2:
+		
+		testStock = self.loadValsForSkewKurtosis()
+
+		#Time range includes all
+		endDate = datetime.datetime(2019, 3, 21, 6, 32, 0, 0) #2019-03-21 06:32:00
+		startDate = testStock.calculateStartDate(endDate, 32, 0, 3) #should return 2018-03-18 6:00:00
+		sampleList1 = testStock.getSampleList(0, startDate, endDate, 1)#here
+		sampleMean1 = testStock.getSampleMean(sampleList1) 	
+		sampleStdDev1 = testStock.getSampleStdDev(sampleList1) 
+
+		sampleZScore1 = testStock.getSampleZScore(10, sampleList1, sampleMean1, sampleStdDev1)
+		assert(sampleZScore1 == -19.5747744353607)
+	
+	def testSampleSkewness(self):
+		testStock = self.loadValsForSkewKurtosis()
+
+		#Time range includes all
+		endDate = datetime.datetime(2019, 3, 21, 6, 32, 0, 0) #2019-03-21 06:32:00
+		startDate = testStock.calculateStartDate(endDate, 32, 0, 3) #should return 2018-03-18 6:00:00
+		sampleList1 = testStock.getSampleList(0, startDate, endDate, 1)#here
+		sampleMean1 = testStock.getSampleMean(sampleList1) 	
+		sampleStdDev1 = testStock.getSampleStdDev(sampleList1)
+
+		sampleSkewness = testStock.getSampleSkewness(sampleList1, sampleMean1, sampleStdDev1)
+		assert(sampleSkewness == -0.10816540728331094)
+
+	def testSampleKurtosis(self):
+		testStock = self.loadValsForSkewKurtosis()
+
+		#Time range includes all
+		endDate = datetime.datetime(2019, 3, 21, 6, 32, 0, 0) #2019-03-21 06:32:00
+		startDate = testStock.calculateStartDate(endDate, 32, 0, 3) #should return 2018-03-18 6:00:00
+		sampleList1 = testStock.getSampleList(0, startDate, endDate, 1)#here
+		sampleMean1 = testStock.getSampleMean(sampleList1) 	
+		sampleStdDev1 = testStock.getSampleStdDev(sampleList1)
+
+		sampleKurtosis = testStock.getSampleKurtosis(sampleList1, sampleMean1, sampleStdDev1)
+		assert(sampleKurtosis == -0.2665377180000241)
+
+
+	"""============================== Population Tests =============================="""
+
 
 	def testPopulationMean(self):
 		testStock = self.loadValuesIntoOneStock()
-		valueList = testStock.collectRecordedValues(0)
-		volumeList = testStock.collectRecordedValues(1)
-		testStock.updateMean(0, valueList)
-		testStock.updateMean(1, volumeList)
-		assert(22.21666666666667 == testStock.means[0]) #for values
-		assert(11.666666666666668 == testStock.means[1]) #for volumes
 
-	def testStdDev(self):
-		testStock = self.loadValuesIntoOneStock()
-		valueList = testStock.collectRecordedValues(0)
-		volumeList = testStock.collectRecordedValues(1)
-		testStock.updateStdDev(0, valueList)
-		testStock.updateStdDev(1, volumeList)
-		assert(27.90193641229145 == testStock.stdDevs[0]) #for values
-		assert(19.322496963096903 == testStock.stdDevs[1]) #for volumes
+		testStock.updatePopMean(0)
+		testStock.updatePopMean(1)
+		assert(37.7 == testStock.popMeans[0]) #for values
+		assert(14.42 == testStock.popMeans[1]) #for volumes
 
-	def testZScore(self):
+	def testPopStdDev(self):
 		testStock = self.loadValuesIntoOneStock()
-		valueList = testStock.collectRecordedValues(0)
-		volumeList = testStock.collectRecordedValues(1)
+
+		testStock.updatePopStdDev(0)
+		testStock.updatePopStdDev(1)
+		assert(33.56128722203604 == testStock.popStdDevs[0]) #for values
+		assert(16.729184080522277 == testStock.popStdDevs[1]) #for volumes
+		
+	def testPopZScore(self):
+		testStock = self.loadValuesIntoOneStock()
 		#need to update the mean, deviations and set lastRecordedValue 
-		#before calling updateZScore
-		testStock.updateMean(0, valueList)
-		testStock.updateMean(1, volumeList)
-		testStock.updateStdDev(0, valueList)
-		testStock.updateStdDev(1, volumeList)
+		#before calling updatePopZScore
+		testStock.updatePopMean(0)
+		testStock.updatePopMean(1)
+		testStock.updatePopStdDev(0)
+		testStock.updatePopStdDev(1)
 		testStock.lastValueRecorded = (5, 14.2, "13:30:00")
-		testStock.updateZScore(0, valueList)
-		testStock.updateZScore(1, volumeList)
-		assert(-0.6170420006792907 == testStock.zScores[0]) #for values
-		assert(0.13110796902551577 == testStock.zScores[1]) #for volumes
 
-	def testSkewness(self):
-		testStock = self.loadValuesForSkewnessAndKurtosis()
-		valueList = testStock.collectRecordedValues(0)
+		testStock.updatePopZScore(0, 5)
+		testStock.updatePopZScore(1, 14.2)
+		assert(-0.9743368835546175 == testStock.popZScores[0]) #for values
+		assert(-0.01315067124260685 == testStock.popZScores[1]) #for volumes
+		
+	def testPopSkewness(self):
+		testStock = self.loadValsForSkewKurtosis()
 		#need to update the mean, deviations and set lastRecordedValue 
-		#before calling updateZScore
-		testStock.updateMean(0, valueList)
-		testStock.updateStdDev(0, valueList)
-		testStock.updateSkewness(0)
-		assert(testStock.skewness[0] == -0.10815437112299184)
+		#before calling updatePopZScore
+		testStock.updatePopMean(0)
+		assert(testStock.popMeans[0] == 67.45)
+		testStock.updatePopStdDev(0)
 
-	def testKurtosis(self):
-		testStock = self.loadValuesForSkewnessAndKurtosis()
-		valueList = testStock.collectRecordedValues(0)
+		testStock.updatePopSkewness(0)
+		assert(testStock.popSkewness[0] == -0.10815437112299223)
+
+	def testPopKurtosis(self):
+		testStock = self.loadValsForSkewKurtosis()
 		#need to update the mean, deviations and set lastRecordedValue 
-		#before calling updateZScore
-		testStock.updateMean(0, valueList)
-		testStock.updateStdDev(0, valueList)
-		testStock.updateKurtosis(0)
-		assert(testStock.kurtosis[0] == 2.7417589685396195)
+		#before calling updatePopZScore
+		testStock.updatePopMean(0)
+		testStock.updatePopStdDev(0)
+
+		testStock.updatePopKurtosis(0)
+		assert(testStock.popKurtosis[0] ==  -0.25824103146037247)
 
 def main():
+	#Sample Tests
 	suite = testSuite()
+
+	suite.testSampleMean()
+	suite.testSampleStdDev()
+	suite.testSampleZScore()
+	suite.testSampleSkewness()
+	suite.testSampleKurtosis()
+
+	#Population Tests
 	suite.testPopulationMean()
-	suite.testStdDev()
-	suite.testZScore()
-	suite.testSkewness()
-	suite.testKurtosis()
+	suite.testPopStdDev()
+	suite.testPopZScore()
+	suite.testPopSkewness()
+	suite.testPopKurtosis()
+	print("Tests successful")
 
 # runs the main() function
 if __name__ == "__main__":

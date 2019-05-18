@@ -4,11 +4,9 @@ import datetime
 import statistics
 from fractions import Fraction
 
+#Maybes: pass currentList for populations
+#TODO: stockTestSuite for population, test samples, stop using statistics class for calculations
 """ notes
-One would have to divide the standard deviation by the closing price to directly compare volatility for the two securities.
-https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:standard_deviation_volatility
-https://stattrek.com/statistics/dictionary.aspx?definition=z_score
-
 Skewness:
 https://brownmath.com/stat/shape.htm
 when the plot is extended towards the right side more, it denotes positive skewness, wherein mode < median < mean. 
@@ -20,139 +18,286 @@ Negative values for the skewness indicate data that are skewed left (longer tail
 and positive values for the skewness indicate data that are skewed right. (longer tail on right side of graph)
 
 Kurtosis: Measure of the peak of the graph
-https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm
+sample: https://en.wikipedia.org/wiki/Kurtosis#Sample_kurtosis
+population: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm
 
 """
 
 class Stock(object):
 
-	def __init__(self, symbol, dataFile):
-		self.symbol = symbol
-		self.volatility = 5	# 0-10
+	def __init__(self, ticker, dataFile):
+		self.ticker = ticker
+		self.record = {}	# key is date, value is {key = time, value (value, volume) }
+		self.lastValueRecorded = 0#tuple of (value, volume, time)
 		self.dataFile = dataFile
 		self.dailyValuesInXY = False
-		self.values = {}	# key is time (second part of time), value is (value, volume)
-		self.previousValues = {}	# key is date, value is value {} ^^
-		self.lastValueRecorded = 0#tuple of (value, volume, time)
-		#mean, stdDev, zScore, skewness, kurtosis are all POPULATION calculations, not SAMPLE
-		self.means = [0.0, 0.0] #(volatility, volume) -> means of all recorded volatilities and volumes, including today
-		self.stdDevs = [0.0, 0.0] #(volatility, volume) -> numerical value used to indicate how widely individuals in a group vary. If individual observations vary greatly from the group mean, the standard deviation is big; and vice versa.
-		self.zScores = [0.0, 0.0] #(volatility, volume) -> z-score indicates how many standard deviations an element is from the mean, see website in notes for more info
-		self.skewness = [0.0, 0.0] #(volatility, volume) skewness is a measure of the asymmetry of the probability distribution of a real-valued random variable about its mean
-		self.kurtosis = [0.0, 0.0] #(volatility, volume) the sharpness of the peak of a frequency-distribution curve.
-		# functions to execute on instantiation
+
+		#POPULATION fields
+		self.populationLists = [[],[]] #first list is all recorded values, second list is all recorded volumes (same as record, different data structure used in statistics class)
+		self.doesPopListNeedToBeUpdated = True #True when an entry has been added and the populationLists need to be updated bc of that entry
+		self.popMeans = [0.0, 0.0] #(volatility, volume) -> means of all recorded volatilities and volumes, including today
+		self.popStdDevs = [0.0, 0.0] #(volatility, volume) -> numerical value used to indicate how widely individuals in a group vary. If individual observations vary greatly from the group mean, the standard deviation is big; and vice versa.
+		self.popZScores = [0.0, 0.0] #(volatility, volume) -> z-score indicates how many standard deviations an element is from the mean, see website in notes for more info
+		self.popSkewness = [0.0, 0.0] #(volatility, volume) skewness is a measure of the asymmetry of the probability distribution of a real-valued random variable about its mean
+		self.popKurtosis = [0.0, 0.0] #(volatility, volume) the sharpness of the peak of a frequency-distribution curve.
+
 
 	""" ############################ Functions that work with our data files ############################ """
 	
-	""" adds a time and value into self.values if it isn't already in there,
+	""" adds a time and value into self.record if it isn't already in there,
 		also sets the self.lastValueRecorded to a tuple of (value, volume, time)
-		if it's from a previous day it adds it to the previous day """
+		if it's from a previous day it adds it to the previous day
+		Untested """
 	def addValue(self, time, value, volume, day):
-		if (day == datetime.date.today().strftime('%Y-%m-%d')):	# today so add it to self.values
-			if (not time in self.values.keys()):
-				self.lastValueRecorded = (value, volume, time)
-				self.values[time] = (value, volume)
-		else:	# not today so previous value
-			if (not day in self.previousValues.keys()):
-				self.previousValues[day] = {}
-			if (not time in self.previousValues[day].keys()):
-				self.previousValues[day][time] = (value, volume)
+		if (not day in self.record.keys()):
+			self.record[day] = {}
+		if (not time in self.record[day].keys()):
+			self.record[day][time] = (value, volume)
+		self.lastValueRecorded = (value, volume, time)
+		self.doesPopListNeedToBeUpdated = True
+
 
 	""" returns a list of the daily values in (x,y) format where x is time ex. 9.55
 		and y is the value of the stock at that time
 		if this hasn't been called yet then it'll set self.dailyValuesInXY so it
-		won't have to recalculate it next time """
+		won't have to recalculate it next time
+		Untested """
 	def getDailyValuesInXY(self):
 		if (self.dailyValuesInXY):	return self.dailyValuesInXY
 		xyValues = []
-		for time in self.values:
-			xValue = float(time.split(":")[0] + "." + time.split(":")[1])
-			xyValues.append((xValue, self.values[time][0]))
-		self.dailyValuesInXY = xyValues
-		return xyValues
+
+		today = datetime.datetime.today()
+		#making the seconds and microseconds 0 bc we don't use those
+		today = datetime.datetime(today.year, today.month, today.day, today.hour, today.minute, 0, 0)
+
+		if self.record.get(today) != None:
+			for time in self.record[today]:
+				xValue = float(time.split(":")[0] + "." + time.split(":")[1])
+				xyValues.append((xValue, self.record[today][time][0]))
+			self.dailyValuesInXY = xyValues
+			return xyValues
+		else:
+			return (0,0)
+		
 
 	""" ############################ Helper functions for update functions ############################ """
 
-	""" returns a list containing all recorded values for this stock if index is 0, 
-		or all recorded volumes for this stock if index is 1"""
-	def collectRecordedValues(self, index):
+	"""Given an endDate (datetime.datetime object), we calculate the startDate by
+		going back (numMinutes + numHours + numDays) amount of time.
+
+		Returns startDate, ie, 3-14-2019 4:32:00, where endDate would be a later date, such as 3-15-2019 4:32:00
+		Tested
+		"""
+	def calculateStartDate(self, endDate, numMinutes, numHours, numDays):
+		#Ensuring the seconds and microseconds are 0 for endDate because we store them like this in record
+		endDate = datetime.datetime(endDate.year, endDate.month, endDate.day, endDate.hour, endDate.minute, 0, 0)
+		minutes = datetime.timedelta(minutes=numMinutes)
+		hours = datetime.timedelta(hours=numHours)
+		days = datetime.timedelta(days=numDays)
+
+		startDate = endDate - days - hours - minutes
+
+		return startDate
+
+
+	"""Starting at a given date, goes back numMinutes + numHours + numDays amount of time, 
+		then returns the data for values (if index is 0) or data for volumes (if index is 1)
+		
+		endDate (datetime.datetime object), the date we want to start going back from (for current time, pass
+		in #today = datetime.datetime.today())
+		interval (int), is how often we want to collect data, ie, interval = 5 means get a data point
+		once every 5 minutes
+
+		***Note: if there is no data point, we will not attempt to go further back in time to add more data,
+		we simply collect everything we can going back numMinutes + numHours + numDays amt of time
+		***
+		Tested
+		"""
+	def getSampleList(self, index, startDate, endDate, interval):
 		retList = []
-		#going through all of today's recorded values if index is 0 or volumes if index 1
-		for time in self.values:
-			retList.append(self.values[time][index]) 
-		#going through all of our past day recorded volumes
-		for day in self.previousValues:
-			for time in self.previousValues[day]:
-				retList.append(self.previousValues[day][time][index])
+	
+		timeDecrement = datetime.timedelta(minutes=interval)
+
+		if endDate < startDate:
+			print("Error: endDate < startDate in getSampleList")
+			return None
+		else:
+			while endDate >= startDate:
+				currentDate = endDate.strftime('%Y-%m-%d') #month - day - year DD-MM-YYYY
+				if self.record.get(currentDate) != None:
+					currentTimeStamp = endDate.strftime('%H:%M:00') #Hour: Minute: 00
+					if self.record.get(currentDate).get(currentTimeStamp) != None:
+						retList.append(self.record[currentDate][currentTimeStamp][index])
+				endDate = endDate - timeDecrement
 
 		return retList
 
-	"""Calculates z-score for this stock. Requires that self.means and self.stdDevs 
-		have been set and updated.
-		index is 0 if we are finding z-score of values (for volatility), 1 if z-score of volumes"""
-	def zScore(self, index):
-		#z = (X - μ) / σ, where X is latest recorded value, μ is the population mean, and σ is the standard deviation
-		if self.stdDevs[index] is 0:
-			print("Error: dividing by 0 using stdDevs[", index, "]")
-			return 0
-		else:
-			return (self.lastValueRecorded[index] - self.means[index]) / self.stdDevs[index]
+	""" returns a list containing all recorded values for this stock if index is 0, 
+		or all recorded volumes for this stock if index is 1
+		Tested
+		"""
+	def getPopulationList(self, index):
+		retList = []
+		#going through all of our past day recorded volumes
+		for day in self.record:
+			for time in self.record[day]:
+				retList.append(self.record[day][time][index])
+
+		return retList
 
 	""" ############################ Update stock functions ############################ """
 
-	"""Updates the population mean (all recorded items, from today and past). index 0 for values, 1 for volumes
-		currenList is obtained from collectRecordedValuesFunction, which has the same index 0/1 rules."""
-	def updateMean(self, index, currentList):
-		self.means[index] = statistics.mean(currentList)
+	""" ############## Sample Calculations ############# """
+
+	"""Returns the sample mean from current time back to (numMinutes + numHours + numDays), with
+		data collected every (interval) number of minutes. 
+		index 0 for values, 1 for volumes
+		sampleList (list of values or list of volumes), obtained from getPopulationList(index)
+		Tested
+		"""
+	def getSampleMean(self, sampleList):
+		return statistics.mean(sampleList)
+
+	"""Returns the sample std dev, same logic as getSampleMean
+		index 0 for values, 1 for volumes
+		sampleList (list of values or list of volumes), obtained from getPopulationList(index)
+		Tested
+		"""
+	def getSampleStdDev(self, sampleList):
+		return statistics.stdev(sampleList)
+
+	"""Returns sample zScore for x, where x is passed in as an argument. x will
+		typically be the current value or current volume, but doesn't need to be.
+		index 0 for values, 1 for volumes
+		sampleList (list of values or list of volumes), obtained from getPopulationList(index)
+		sampleMean and sampleStdDev obtained from getSampleMean() and getSampleStdDev()
+		Tested
+		"""
+	def getSampleZScore(self, x, sampleList, sampleMean, sampleStdDev):
+		if sampleStdDev == 0:
+			print("Error: sampleStdDev is 0 in getSampleZScore")
+			return 0
+		else:
+			return ((x - sampleMean) / float(sampleStdDev))
+
+	def getSampleSkewness(self, sampleList, sampleMean, sampleStdDev):
+		n = len(sampleList)
+		s = sampleStdDev
+		x_bar = sampleMean
+
+		m_3Num = 0.0
+		for x in sampleList:
+			m_3temp = x - x_bar # x - x_bar
+			m_3temp **= 3 #(x - x_bar)^3
+			m_3Num += m_3temp #sigma (x - x_bar)^3
+		m3 = m_3Num / n
+		m2 = s ** 2 #m2 = stdDev^2
+		m2 **= Fraction('3/2')
+		#skewness is m3/m2
+		g_1 =  m3 / m2
+		multVar = (n*(n-1))**0.5
+		multVar /= (n-2)
+		g_1 *= multVar
+		return g_1
+
+
+	"""https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis"""
+	def getSampleKurtosis(self, sampleList, sampleMean, sampleStdDev):
+		#m2, n are good, 
+		#m4 is not
+		n = len(sampleList)
+		m2 = sampleStdDev ** 4
+		
+		m4 = 0.0
+		for x in sampleList:
+			tempM4 = x - sampleMean
+			tempM4 **= 4
+			m4 += tempM4
+		m4 /= n
+		g2 = float(m4/m2) - 3
+
+		multVar = (n-1)/((n-2)*(n-3))
+		retVal = multVar*(((n+1)*g2) + 6)
+		return retVal
+		
+
+	""" ############## Population Calculations ############# """
+
+	"""updates the list of all values and the list of all volumes used in all population calculations
+		if an entry has been added
+		Tested
+		 """
+	def updatePopList(self):
+		if self.doesPopListNeedToBeUpdated is True:
+			self.doesPopListNeedToBeUpdated = False
+			self.populationLists[0] = self.getPopulationList(0)
+			self.populationLists[1] = self.getPopulationList(1)
+
+	"""Updates the population mean (all recorded items, from today and past). index 0 for values, 1 for volumes"""
+	def updatePopMean(self, index):
+		self.updatePopList()
+		self.popMeans[index] = statistics.mean(self.populationLists[index])
 
 	"""Updates the population std dev (all recorded items, from today and past). index 0 for values, 1 for volumes"""
-	def updateStdDev(self, index, currentList):
-		self.stdDevs[index] = statistics.pstdev(currentList)
+	def updatePopStdDev(self, index):
+		self.updatePopList()
+		self.popStdDevs[index] = statistics.pstdev(self.populationLists[index])
 
-	"""Requires that updateMeans/updateStdDev have both been called, in that order, and that
+	"""Requires that updateMeans/updatePopStdDev have both been called, in that order, and that
 		lastValueRecorded has values.
 		Updates the population z-score for this stock. 
-		index is 0 if we are finding z-score of values (for volatility), 1 if z-score of volumes"""
-	def updateZScore(self, index, currentList):
-		self.zScores[index] = self.zScore(index)
 
-	"""Requires that updateMeans/updateStdDev have both been called
+		x is the value we want to compute the zscore for, ie, x = self.lastValueRecorded[index] gives us the
+		zscore for the most current entry compared against all time
+
+		index is 0 if we are finding z-score of values (for volatility), 1 if z-score of volumes"""
+	def updatePopZScore(self, index, x):
+		#z = (X - μ) / σ, where X is latest recorded value, μ is the population mean, and σ is the standard deviation
+		if self.popStdDevs[index] is 0:
+			print("Error: dividing by 0 using stdDevs[", index, "]")
+			self.popZScores[index] = 0
+		else:
+			self.popZScores[index] = (x - self.popMeans[index]) / self.popStdDevs[index]
+
+	"""Requires that updateMeans/updatePopStdDev have both been called
 		skewness of a normal distribution is 0
 		negative values for skewness indicate that the data is skewed left
 		positive values for skewness indicate that the data is skewed right
 		index is 0 if caluclating for volatility, 1 if calculating for volume"""
-	def updateSkewness(self, index):
-		currentList = self.collectRecordedValues(index)
+	def updatePopSkewness(self, index):
 		#skewness = m_3 / (m_2)^(3/2) ***m2 is just std deviation squared
 		#m_3 = sigma [ (x - x_bar)^3 ] / n
+		self.updatePopList()
 		m_3Num = 0.0
-		m_3Denom = len(currentList)
-		for x in currentList:
-			m_3temp = x - self.means[index] # x - x_bar
+		m_3Denom = len(self.populationLists[index])
+		for x in self.populationLists[index]:
+			m_3temp = x - self.popMeans[index] # x - x_bar
 			m_3temp **= 3 #(x - x_bar)^3
 			m_3Num += m_3temp #sigma (x - x_bar)^3
 		m3 = m_3Num / m_3Denom
-		m2 = self.stdDevs[index] ** 2 #m2 = stdDev^2
+		m2 = self.popStdDevs[index] ** 2 #m2 = stdDev^2
 		m2 **= Fraction('3/2')
 		#skewness is m3/m2
-		self.skewness[index] =  m3 / m2
 
-	"""Requires that updateMeans/updateStdDev have both been called
+		self.popSkewness[index] =  m3 / m2
+
+	"""Requires that updateMeans/updatePopStdDev have both been called
 	standard normal distribution has a kurtosis of 0
 	positive kurtosis indicates a 'heavy-tailed' distribution and
 	negative kurtosis indicates a 'light-tailed' distrubution
 	index is 0 if calculating for volatility, 1 if calc for volume"""
-	def updateKurtosis(self, index):
+	def updatePopKurtosis(self, index):
 		#Need to obtain the list of values for either volatility or volume for calcs
-		currentList = self.collectRecordedValues(index)
+		self.updatePopList()
 		num = 0.0 #sigma [(x - x_bar)^4] / n
-		for x in currentList:
-			num_temp = x - self.means[index]
+		for x in self.populationLists[index]:
+			num_temp = x - self.popMeans[index]
 			num_temp **= 4
 			num += num_temp
-		num /= len(currentList)
-		denom = self.stdDevs[index] ** 4  ## denom = stdDev^4
-		self.kurtosis[index] = num / denom
+		num /= len(self.populationLists[index])
+		denom = self.popStdDevs[index] ** 4  ## denom = stdDev^4
+		self.popKurtosis[index] = (num / denom) - 3 #the 3 is so perfect normal distr = 0
+
 
 	def __str__(self):
-		return self.symbol
+		return self.ticker
