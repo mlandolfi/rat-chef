@@ -3,10 +3,10 @@ from alpha_vantage.timeseries import TimeSeries
 import time
 import datetime
 import statistics
-from StockManager import StockManager
 from Stocks import Stock
-from AllStocks import ALL_STOCKS
+#from AllStocks import ALL_STOCKS
 from FileManager import FileManager
+from brain import brain
 
 # Constants
 API_KEY = "878U8SIR8IMVPVQ6"	
@@ -43,10 +43,9 @@ def main():
 
 
 
+	rat_chef = brain()
+	rat_chef.setAllFeatureVectors()
 
-	manager = StockManager()
-	print(manager)
-	manager.testingStocks()
 	#get stocks with a volume change of over 100% compared to their regular std deviation
 	#retList = manager.pullStocksWithHighVolume(100) 
 	#for stock in retList:
@@ -64,6 +63,7 @@ def main():
 # runs the main() function
 if __name__ == "__main__":
 	main()
+
 
 
 

@@ -2,10 +2,10 @@
 import json
 import datetime
 import statistics
+from cryptoDataCollection import getData
 from fractions import Fraction
 
-#Maybes: pass currentList for populations
-#TODO: stockTestSuite for population, test samples, stop using statistics class for calculations
+#TODO: stop using statistics class for calculations, maybe pass currentList for populations?
 """ notes
 Skewness:
 https://brownmath.com/stat/shape.htm
@@ -25,11 +25,10 @@ population: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm
 
 class Stock(object):
 
-	def __init__(self, ticker, dataFile):
+	def __init__(self, ticker):
 		self.ticker = ticker
-		self.record = {}	# key is date, value is {key = time, value (value, volume) }
+		self.record = getData(self.ticker)	# key is date, value is {key = time, value (value, volume) }
 		self.lastValueRecorded = 0#tuple of (value, volume, time)
-		self.dataFile = dataFile
 		self.dailyValuesInXY = False
 
 		#POPULATION fields
@@ -116,19 +115,20 @@ class Stock(object):
 	def getSampleList(self, index, startDate, endDate, interval):
 		retList = []
 	
+		tempEndDate = endDate + datetime.timedelta(minutes=0) - datetime.timedelta(minutes=0)
 		timeDecrement = datetime.timedelta(minutes=interval)
 
-		if endDate < startDate:
+		if tempEndDate < startDate:
 			print("Error: endDate < startDate in getSampleList")
 			return None
 		else:
-			while endDate >= startDate:
-				currentDate = endDate.strftime('%Y-%m-%d') #month - day - year DD-MM-YYYY
+			while tempEndDate >= startDate:
+				currentDate = tempEndDate.strftime('%Y-%m-%d') #year - month - date 
 				if self.record.get(currentDate) != None:
-					currentTimeStamp = endDate.strftime('%H:%M:00') #Hour: Minute: 00
+					currentTimeStamp = tempEndDate.strftime('%H:%M:00') #Hour: Minute: 00
 					if self.record.get(currentDate).get(currentTimeStamp) != None:
 						retList.append(self.record[currentDate][currentTimeStamp][index])
-				endDate = endDate - timeDecrement
+				tempEndDate = tempEndDate - timeDecrement
 
 		return retList
 
@@ -180,6 +180,7 @@ class Stock(object):
 		else:
 			return ((x - sampleMean) / float(sampleStdDev))
 
+	#From brownMath
 	def getSampleSkewness(self, sampleList, sampleMean, sampleStdDev):
 		n = len(sampleList)
 		s = sampleStdDev
@@ -201,7 +202,7 @@ class Stock(object):
 		return g_1
 
 
-	"""https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis"""
+	"""From brownMath"""
 	def getSampleKurtosis(self, sampleList, sampleMean, sampleStdDev):
 		#m2, n are good, 
 		#m4 is not
@@ -219,7 +220,58 @@ class Stock(object):
 		multVar = (n-1)/((n-2)*(n-3))
 		retVal = multVar*(((n+1)*g2) + 6)
 		return retVal
-		
+
+	#From endDate, goes back until it finds the most recent data point 
+	def obtainXForZScore(self, index, startDate, endDate, interval):
+		retVal = 0
+
+		timeDecrement = datetime.timedelta(minutes=interval)
+		tempEndDate = endDate + datetime.timedelta(minutes=1) - datetime.timedelta(minutes=1)
+
+		if tempEndDate < startDate:
+			print("Error: in obtainXForZScore, endDate<startDate")
+		else:
+			while tempEndDate >= startDate:
+				currentDate = tempEndDate.strftime('%Y-%m-%d') #year - month - date 
+				if self.record.get(currentDate) != None:
+					currentTimeStamp = tempEndDate.strftime('%H:%M:00') #Hour: Minute: 00
+					if self.record.get(currentDate).get(currentTimeStamp) != None:
+						return self.record[currentDate][currentTimeStamp][index]
+				tempEndDate = tempEndDate - timeDecrement
+		return retVal
+
+
+	def getAllSampleValues(self, index, endDate, numMinutes, numHours, numDays, interval):
+		retList = []
+		startDate = self.calculateStartDate(endDate, numMinutes, numHours, numDays)
+		sampleList = self.getSampleList(index, startDate, endDate, interval)
+
+		if len(sampleList) is 0:
+			return [0, 0, 0, 0, 0]
+		else:
+			#getting mean
+			mean = self.getSampleMean(sampleList)
+
+			#getting standard dev
+			stdDev = self.getSampleStdDev(sampleList)
+
+			#getting z-scores from last recorded value, returns 0 if theres no data
+			x = self.obtainXForZScore(index, startDate, endDate, interval)
+			zScore = self.getSampleZScore(x, sampleList, mean, stdDev)
+
+			#getting skewness
+			skewness = self.getSampleSkewness(sampleList, mean, stdDev)
+
+			#getting kurtosis
+			kurtosis = self.getSampleKurtosis(sampleList, mean, stdDev)
+
+			retList.append(mean)
+			retList.append(stdDev)
+			retList.append(zScore)
+			retList.append(skewness)
+			retList.append(kurtosis)
+
+			return retList
 
 	""" ############## Population Calculations ############# """
 
