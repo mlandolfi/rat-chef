@@ -48,25 +48,29 @@ class brain(object):
 			guesses += 1
 			# output<-0.5 sell; -0.5<output<0.5 hold; output>0.5 buy
 
-			actual = stock.getValue(nextTime) - stock.getValue(currentTime)
+			actual = stock.getValue(nextTime+datetime.timedelta(minutes=59)) - stock.getValue(currentTime)
 
 			# conditionals for incorrect predictions
 			if (predicted <= 0 and actual > 0):
 				weights = numpy.add(weights, self.featureVectors[stock.ticker])
-				# print ("Predicted wrong")				
 			elif (predicted >= 0 and actual < 0):
 				weights = numpy.subtract(weights, self.featureVectors[stock.ticker])
-				# print ("Predicted wrong")				
 			else:
 				correctGuesses += 1		
-				# print ("Predicted correctly")
+
+			print ("\r{} percent so far".format(round(100*(correctGuesses/guesses))), end="")
+
+			if (guesses >= 1440):
+				print ("\r{} percent correct over day".format(round(100*(correctGuesses/guesses))))
+				guesses = 0
+				correctGuesses = 0
 
 			# increment to the next minute
 			currentTime = nextTime
 
 		# resetting the weights vector
 		self.weights[stock.ticker] = weights
-		print ("{} percent correct".format(correctGuesses/guesses))
+		# print ("\n{} percent correct".format(correctGuesses/guesses))
 		print (weights)
 
 	def test(self, startDate, endDate, stock):
@@ -154,10 +158,15 @@ class brain(object):
 		featureVector += twoHrValue
 		featureVector += twoHrVolume
 
+		# return featureVector
+
 		svnHrValue = stock.getAllSampleValues(0, today, 0, 7, 0, 1)
 		svnHrVolume = stock.getAllSampleValues(1, today, 0, 7, 0, 1)
 		featureVector += svnHrValue
 		featureVector += svnHrVolume
+
+		return featureVector
+
 		#put from currentTime back to 12am, all of previous day here
 
 		previousDayValue = stock.getAllSampleValues(0, today, 0, 0, 1, 1)
@@ -165,17 +174,21 @@ class brain(object):
 		featureVector += previousDayValue
 		featureVector += previousDayVolume
 
+		# return featureVector
+
 		weekValue = stock.getAllSampleValues(0, today, 0, 0, 7, 1)
 		weekVolume = stock.getAllSampleValues(1, today, 0, 0, 7, 1)
 		featureVector += weekValue
 		featureVector += weekVolume
+
+		# return featureVector
 
 		twoWeekValue = stock.getAllSampleValues(0, today, 0, 0, 14, 1)
 		twoWeekVolume = stock.getAllSampleValues(1, today, 0, 0, 14, 1)
 		featureVector += twoWeekValue
 		featureVector += twoWeekVolume
 
-		return featureVector
+		# return featureVector
 
 		# print("Slow boys")
 		#populations
