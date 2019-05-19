@@ -3,28 +3,104 @@ import datetime
 import statistics
 from fractions import Fraction
 from Stocks import Stock
+import numpy
 
 #TODO: Need to update populations because mike fucked itup
 class brain(object):
 
-	def __init__(self):
-		self.stockList = [] #
-		bitcoin = Stock("BTC-USD")
-		self.stockList.append(bitcoin)
+	def __init__(self, stockList):
+		self.stockList = stockList #
 		self.featureVectors = {} #key is ticker, value is list of obtainIndividualFeatureVector
-		self.weights = {} #key is ticker, value is list of obtainIndividualFeatureVector
-		
+		self.weights = {} #key is ticker, value is list of obtainIndividualFeatureVector		
 
 		#Each feature vector will include
 			#sample calculations for various times, and population calculations
 
-	def setAllFeatureVectors(self):
+	def setAllFeatureVectors(self, stock=None):
+		if (stock != None):
+			self.featureVectors[stock.ticker] = self.obtainIndividualFeatureVector(stock)
+			return
 		for stock in self.stockList:
 			if not stock.ticker in self.featureVectors.keys():
 				self.featureVectors[stock.ticker] = self.obtainIndividualFeatureVector(stock)
-				print(self.featureVectors[stock.ticker])
+				# print(self.featureVectors[stock.ticker])
 
+	def initializeWeights(self):
+		self.weights = {} # list of lists
+		for ticker in self.featureVectors.keys():
+			self.weights[ticker] = [0] * len(self.featureVectors[ticker])
 
+	def train(self, startDate, endDate, stock):
+		print ("training for {} from {} to {}".format(stock.ticker, startDate, endDate))
+		currentTime = startDate
+		weights = self.weights[stock.ticker]
+		correctGuesses = 0
+		guesses = 0
+		while currentTime < endDate:
+			nextTime = currentTime + datetime.timedelta(minutes=1)
+			# continue if no values for current time or next time
+			if (stock.getValue(currentTime) == None or stock.getValue(nextTime) == None):
+				currentTime += datetime.timedelta(minutes=1)
+				continue
+			self.setAllFeatureVectors(stock)
+
+			predicted = numpy.dot(self.featureVectors[stock.ticker], weights)
+			guesses += 1
+			# output<-0.5 sell; -0.5<output<0.5 hold; output>0.5 buy
+
+			actual = stock.getValue(nextTime) - stock.getValue(currentTime)
+
+			# conditionals for incorrect predictions
+			if (predicted <= 0 and actual > 0):
+				weights = numpy.add(weights, self.featureVectors[stock.ticker])
+				# print ("Predicted wrong")				
+			elif (predicted >= 0 and actual < 0):
+				weights = numpy.subtract(weights, self.featureVectors[stock.ticker])
+				# print ("Predicted wrong")				
+			else:
+				correctGuesses += 1		
+				# print ("Predicted correctly")
+
+			# increment to the next minute
+			currentTime = nextTime
+
+		# resetting the weights vector
+		self.weights[stock.ticker] = weights
+		print ("{} percent correct".format(correctGuesses/guesses))
+		print (weights)
+
+	def test(self, startDate, endDate, stock):
+		print ("testing for {} from {} to {}".format(stock.ticker, startDate, endDate))
+		currentTime = startDate
+		weights = self.weights[stock.ticker]
+		correctGuesses = 0
+		guesses = 0
+		while currentTime < endDate:
+			nextTime = currentTime + datetime.timedelta(minutes=1)
+			# continue if no values for current time or next time
+			if (stock.getValue(currentTime) == None or stock.getValue(nextTime) == None):
+				currentTime += datetime.timedelta(minutes=1)
+				continue
+			self.setAllFeatureVectors(stock)
+
+			predicted = numpy.dot(self.featureVectors[stock.ticker], weights)
+			guesses += 1
+			# output<-0.5 sell; -0.5<output<0.5 hold; output>0.5 buy
+
+			actual = stock.getValue(nextTime) - stock.getValue(currentTime)
+
+			if ((predicted < 0 and actual < 0) or (predicted > 0 and actual > 0)):
+				correctGuesses += 1
+				# print("Predicted correct")
+			else:
+				pass
+				# print("Predicted wrong")
+
+			print ("{}/{} so far".format(correctGuesses, guesses))
+
+			currentTime = nextTime
+
+		print ("{} percent correct".format(correctGuesses/guesses))
 
 	def obtainIndividualFeatureVector(self, stock):
 		"""[#5x(5 min) for value then volume, 5x(10 min) for value then volume, 5x(15 min), 5x(20 min), 5x(30 min), 5x(45 min), 5x(1hr)
@@ -99,7 +175,9 @@ class brain(object):
 		featureVector += twoWeekValue
 		featureVector += twoWeekVolume
 
-		print("Slow boys")
+		return featureVector
+
+		# print("Slow boys")
 		#populations
 		stock.updatePopMean(0)
 		stock.updatePopMean(1)

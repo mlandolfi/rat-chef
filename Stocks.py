@@ -55,6 +55,12 @@ class Stock(object):
 		self.lastValueRecorded = (value, volume, time)
 		self.doesPopListNeedToBeUpdated = True
 
+	def getValue(self, when, index=0):
+		dateKey = when.isoformat().split("T")[0]
+		timeKey = when.isoformat().split("T")[1]
+		if (not dateKey in self.record.keys() or not timeKey in self.record[dateKey].keys()):
+			return None
+		return self.record[dateKey][timeKey][index]
 
 	""" returns a list of the daily values in (x,y) format where x is time ex. 9.55
 		and y is the value of the stock at that time
