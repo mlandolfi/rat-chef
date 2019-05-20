@@ -42,20 +42,20 @@ def main():
 	# 	stock.saveValues()
 
 
-	startDate = datetime.datetime(2018, 1, 2)
-	endDate = startDate + datetime.timedelta(days=7)
+	startDate = datetime.datetime(2018, 5, 1)
+	endDate = startDate + datetime.timedelta(days=1)
 
 	bitcoin = Stock("BTC-USD")
 
 	rat_chef = brain([bitcoin])
-	rat_chef.setAllFeatureVectors()
+	rat_chef.setAllFeatureVectors(startDate)
 	rat_chef.initializeWeights()
 	rat_chef.train(startDate, endDate, bitcoin)
 
 	# testStartDate = endDate
 	# testEndDate = testStartDate + datetime.timedelta(hours=2)
 
-	# rat_chef.test(startDate, endDate, bitcoin)
+	rat_chef.test(startDate, endDate, bitcoin)
 
 	#get stocks with a volume change of over 100% compared to their regular std deviation
 	#retList = manager.pullStocksWithHighVolume(100) 

@@ -16,19 +16,25 @@ class brain(object):
 		#Each feature vector will include
 			#sample calculations for various times, and population calculations
 
-	def setAllFeatureVectors(self, stock=None):
+	def setAllFeatureVectors(self, fromWhen, stock=None):
 		if (stock != None):
-			self.featureVectors[stock.ticker] = self.obtainIndividualFeatureVector(stock)
+			self.featureVectors[stock.ticker] = self.obtainIndividualFeatureVector(stock, fromWhen)
 			return
 		for stock in self.stockList:
 			if not stock.ticker in self.featureVectors.keys():
-				self.featureVectors[stock.ticker] = self.obtainIndividualFeatureVector(stock)
+				self.featureVectors[stock.ticker] = self.obtainIndividualFeatureVector(stock, fromWhen)
 				# print(self.featureVectors[stock.ticker])
 
 	def initializeWeights(self):
 		self.weights = {} # list of lists
 		for ticker in self.featureVectors.keys():
 			self.weights[ticker] = [0] * len(self.featureVectors[ticker])
+
+	def normalizeFeatures(self, stock):
+		denom = max(self.featureVectors[stock.ticker])
+		for i in range(len(self.featureVectors[stock.ticker])):
+			self.featureVectors[stock.ticker][i] = self.featureVectors[stock.ticker][i] / denom
+		
 
 	def train(self, startDate, endDate, stock):
 		print ("training for {} from {} to {}".format(stock.ticker, startDate, endDate))
@@ -39,24 +45,38 @@ class brain(object):
 		while currentTime < endDate:
 			nextTime = currentTime + datetime.timedelta(minutes=1)
 			# continue if no values for current time or next time
-			if (stock.getValue(currentTime) == None or stock.getValue(nextTime) == None):
+			if (stock.getValue(currentTime) == None or stock.getValue(nextTime+datetime.timedelta(minutes=4)) == None):
 				currentTime += datetime.timedelta(minutes=1)
 				continue
-			self.setAllFeatureVectors(stock)
+			self.setAllFeatureVectors(currentTime, stock)
+			# self.normalizeFeatures(stock)
 
 			predicted = numpy.dot(self.featureVectors[stock.ticker], weights)
+			# print (predicted)
 			guesses += 1
 			# output<-0.5 sell; -0.5<output<0.5 hold; output>0.5 buy
 
-			actual = stock.getValue(nextTime+datetime.timedelta(minutes=59)) - stock.getValue(currentTime)
+			actual = stock.getValue(nextTime+datetime.timedelta(minutes=4)) - stock.getValue(currentTime)
+
+			# print ("current price: {}".format(stock.getValue(currentTime)))
+			# print ("predict: {}".format("rise" if predicted > 0 else "fall"))
+			# print ("price in 1 hour: {}".format(stock.getValue(nextTime+datetime.timedelta(minutes=59))))
+
+			weightsNumpy = numpy.array(weights)
+			featuresNumpy = numpy.array(self.featureVectors[stock.ticker])
+			# print ("before: ", weights)
+			# print ("adjustment: ", featuresNumpy)
 
 			# conditionals for incorrect predictions
 			if (predicted <= 0 and actual > 0):
-				weights = numpy.add(weights, self.featureVectors[stock.ticker])
+				# weights = numpy.add(weights, self.featureVectors[stock.ticker])
+				weights = weightsNumpy + featuresNumpy
 			elif (predicted >= 0 and actual < 0):
-				weights = numpy.subtract(weights, self.featureVectors[stock.ticker])
+				# weights = numpy.subtract(weights, self.featureVectors[stock.ticker])
+				weights = weightsNumpy - featuresNumpy
 			else:
 				correctGuesses += 1		
+			# print ("after: ", weights)
 
 			print ("\r{} percent so far".format(round(100*(correctGuesses/guesses))), end="")
 
@@ -82,16 +102,16 @@ class brain(object):
 		while currentTime < endDate:
 			nextTime = currentTime + datetime.timedelta(minutes=1)
 			# continue if no values for current time or next time
-			if (stock.getValue(currentTime) == None or stock.getValue(nextTime) == None):
+			if (stock.getValue(currentTime) == None or stock.getValue(nextTime+datetime.timedelta(minutes=4)) == None):
 				currentTime += datetime.timedelta(minutes=1)
 				continue
-			self.setAllFeatureVectors(stock)
+			self.setAllFeatureVectors(currentTime, stock)
 
 			predicted = numpy.dot(self.featureVectors[stock.ticker], weights)
 			guesses += 1
 			# output<-0.5 sell; -0.5<output<0.5 hold; output>0.5 buy
 
-			actual = stock.getValue(nextTime) - stock.getValue(currentTime)
+			actual = stock.getValue(nextTime+datetime.timedelta(minutes=4)) - stock.getValue(currentTime)
 
 			if ((predicted < 0 and actual < 0) or (predicted > 0 and actual > 0)):
 				correctGuesses += 1
@@ -100,13 +120,13 @@ class brain(object):
 				pass
 				# print("Predicted wrong")
 
-			print ("{}/{} so far".format(correctGuesses, guesses))
+			print ("\r{} percent so far".format(round(100*(correctGuesses/guesses))), end="")
 
 			currentTime = nextTime
 
 		print ("{} percent correct".format(correctGuesses/guesses))
 
-	def obtainIndividualFeatureVector(self, stock):
+	def obtainIndividualFeatureVector(self, stock, fromWhen):
 		"""[#5x(5 min) for value then volume, 5x(10 min) for value then volume, 5x(15 min), 5x(20 min), 5x(30 min), 5x(45 min), 5x(1hr)
 		5x(2hr), 5x(7hr), 5x(from currentTime back to 12:00am), 5x (all of previous day),
 		5x(past week), 5x(2 weeks), population stuff here] """
@@ -114,6 +134,7 @@ class brain(object):
 
 		today = datetime.datetime.today()
 		today = datetime.datetime(2018, today.month, today.day, today.hour, today.minute, 0, 0)
+		today = fromWhen
 		start = today = datetime.datetime(2018, 1, today.day, today.hour, today.minute, 0, 0)
 
 		fiveMinValue = stock.getAllSampleValues(0, today, 5, 0, 0, 1)

@@ -190,6 +190,7 @@ class Stock(object):
 	def getSampleSkewness(self, sampleList, sampleMean, sampleStdDev):
 		n = len(sampleList)
 		s = sampleStdDev
+		if (s == 0):	return 0
 		x_bar = sampleMean
 
 		m_3Num = 0.0
@@ -214,6 +215,7 @@ class Stock(object):
 		#m4 is not
 		n = len(sampleList)
 		m2 = sampleStdDev ** 4
+		if (m2 == 0):	return 0
 		
 		m4 = 0.0
 		for x in sampleList:
