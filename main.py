@@ -42,12 +42,12 @@ def main():
 	# 	stock.saveValues()
 
 
-	startDate = datetime.datetime(2018, 5, 1)
-	endDate = startDate + datetime.timedelta(days=1)
+	startDate = datetime.datetime(2018, 3, 5, 0)
+	endDate = startDate + datetime.timedelta(hours=24)
 
 	bitcoin = Stock("BTC-USD")
 
-	rat_chef = brain([bitcoin])
+	rat_chef = brain([bitcoin], 100, 10)
 	rat_chef.setAllFeatureVectors(startDate)
 	rat_chef.initializeWeights()
 	rat_chef.train(startDate, endDate, bitcoin)
