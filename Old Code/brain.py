@@ -4,6 +4,7 @@ import statistics
 from fractions import Fraction
 from Stocks import Stock
 import numpy
+from FeaturesWrapper import FeaturesWrapper
 
 #TODO: Need to update populations because mike fucked itup
 class brain(object):
@@ -32,6 +33,11 @@ class brain(object):
 		for ticker in self.featureVectors.keys():
 			self.weights[ticker] = [0] * len(self.featureVectors[ticker])
 
+	def initializeWeightsBySize(self, size):
+		self.weights = {} # list of lists
+		for ticker in self.featureVectors.keys():
+			self.weights[ticker] = [0] * size 
+
 	def normalizeFeatures(self, features):
 		denom = max(features)
 		retFeatures = []
@@ -42,16 +48,13 @@ class brain(object):
 	def adjustWeights(self, weights, features, scalar):
 		adjustedWeights = []
 		for i in range(len(weights)):
-			if (features[i] < 0):
-				multiplier = max(features[i], -1*self.miraConst)
-			else:
-				multiplier = min(features[i], self.miraConst)
-			adjustedWeights.append(weights[i] + scalar*(multiplier))
+			adjustedWeights.append(weights[i] + scalar*(features[i]))
 		return numpy.array(adjustedWeights)
-			
 
 	def train(self, startDate, endDate, stock):
 		print ("training for {} from {} to {}".format(stock.ticker, startDate, endDate))
+		featuresWrapper = FeaturesWrapper(stock)
+		self.initializeWeightsBySize(featuresWrapper.getVectorSize())
 		currentTime = startDate
 		weights = self.weights[stock.ticker]
 		correctGuesses = 0
@@ -62,7 +65,8 @@ class brain(object):
 			if (stock.getValue(currentTime) == None or stock.getValue(nextTime+datetime.timedelta(minutes=4)) == None):
 				currentTime += datetime.timedelta(minutes=1)
 				continue
-			self.setAllFeatureVectors(currentTime, stock)
+			# self.setAllFeatureVectors(currentTime, stock)
+			self.featureVectors[stock.ticker] = featuresWrapper.getFeatures(currentTime)
 			
 			predicted = numpy.dot(self.featureVectors[stock.ticker], weights)
 			print ('\npredicted: ', predicted)
@@ -104,7 +108,7 @@ class brain(object):
 		# resetting the weights vector
 		self.weights[stock.ticker] = weights
 		# print ("\n{} percent correct".format(correctGuesses/guesses))
-		print (weights)
+		print ("\n",weights)
 
 	def test(self, startDate, endDate, stock):
 		print ("testing for {} from {} to {}".format(stock.ticker, startDate, endDate))
