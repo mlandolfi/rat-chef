@@ -2,20 +2,23 @@ import datetime
 from Stocks import Stock
 import numpy as np
 from FeaturesWrapper import FeaturesWrapper
+from Tracer import Tracer
 
 class RatBoi(object):
 
 	def __init__(self, stock):
 		self.stock = stock
 		self.featuresWrapper = FeaturesWrapper(self.stock)
-		self.initializeTimeDenoms(30, 600)
+		self.initializeTimeDenoms(120, 250)
 		self.learningRate = 0.01	# just a default
 		# self.initializeConfidence()
 
 	def initializeTimeDenoms(self, breakdown, limit):
 		self.timeDenoms = []
+		self.tracers = []
 		for i in range(breakdown, limit, breakdown):
 			self.timeDenoms.append(datetime.timedelta(minutes=i))
+			self.tracers.append(Tracer(str(datetime.timedelta(minutes=i))))
 
 	def initializeWeights(self):
 		self.weights = np.zeros((len(self.timeDenoms), self.featuresWrapper.getVectorSize()))
@@ -63,12 +66,6 @@ class RatBoi(object):
 	def run(self, startDate, endDate, testing=False):
 		print ("running for {} from {} to {}".format(self.stock.ticker, startDate, endDate))
 		currentTime = startDate
-		correctGuesses = [0] * len(self.timeDenoms)
-		guesses = [0] * len(self.timeDenoms)
-		negPredicts = [0] * len(self.timeDenoms)
-		correctNegPredicts = [0] * len(self.timeDenoms)
-		posPredicts = [0] * len(self.timeDenoms)
-		correctPosPredicts = [0] * len(self.timeDenoms)
 		while currentTime < endDate:
 			print ("\r{}".format(currentTime), end="")
 			# ensuring we have a value for the currentTime
@@ -90,16 +87,7 @@ class RatBoi(object):
 				# print (predicted)
 				actual = self.stock.getValue(nextTime) - currentValue
 				if (testing):					
-					if (predicted > 0):	posPredicts[i] += 1
-					else:	negPredicts[i] += 1
-
-					if (predicted < 0 and actual < 0):
-						correctGuesses[i] += 1
-						correctNegPredicts[i] += 1
-					elif (predicted > 0 and actual > 0):
-						correctGuesses[i] += 1
-						correctPosPredicts[i] += 1
-					guesses[i] += 1
+					self.tracers[i].trace(predicted, actual, str(currentTime))
 				else:
 					# conditionals for incorrect predictions, and updating weights
 					if (predicted <= 0 and actual > 0):
@@ -112,15 +100,6 @@ class RatBoi(object):
 			currentTime += datetime.timedelta(minutes=1)
 
 		if (testing):
-			print()
 			for i in range(len(self.timeDenoms)):
-				print ("{}\n{}/{} overall".format(self.timeDenoms[i], correctGuesses[i], guesses[i]))
-				print ("{}/{} positive predictions".format(correctPosPredicts[i], posPredicts[i]))
-				print ("{}/{} negative predictions".format(correctNegPredicts[i], negPredicts[i]))
-				# print ("{}: {}/{} ==> {}".format(self.timeDenoms[i], correctGuesses[i], guesses[i],
-				# 	correctGuesses[i]/guesses[i]))
-				# print ("{}/{} positive predictions ==> {}".format(correctPosPredicts[i], posPredicts[i],
-				# 	correctPosPredicts[i]/posPredicts[i]))
-				# print ("{}/{} negative predictions ==> {}".format(correctNegPredicts[i], negPredicts[i],
-				# 	correctNegPredicts[i]/negPredicts[i]))
-
+				self.tracers[i].print()
+				

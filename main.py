@@ -9,6 +9,7 @@ from Stocks import Stock
 
 from FeaturesWrapper import FeaturesWrapper
 from RatBoi import RatBoi
+from Tracer import Tracer
 
 # Constants
 API_KEY = "878U8SIR8IMVPVQ6"	
@@ -43,14 +44,14 @@ def main():
 	# 		stock.addValue(dataKey.split(" ")[1], item["4. close"], item["5. volume"], dataKey.split(" ")[0])
 	# 	stock.saveValues()
 
-	startDate = datetime.datetime(2018, 3, 12, 8)
+	startDate = datetime.datetime(2018, 5, 12, 8)
 	endDate = startDate + datetime.timedelta(hours=72)
 
 	testStartDate = datetime.datetime(2018, 6, 12, 8)
-	testEndDate = testStartDate + datetime.timedelta(hours=48)
+	testEndDate = testStartDate + datetime.timedelta(hours=72)
 
 	ratBoi = RatBoi(Stock("BTC-USD"))
-	ratBoi.train(startDate, endDate, iterations=3, learningRate=0.4)
+	ratBoi.train(startDate, endDate, iterations=3, learningRate=0.75)
 	ratBoi.test(testStartDate, testEndDate)
 	return
 
