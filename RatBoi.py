@@ -10,8 +10,7 @@ class RatBoi(object):
 		self.stock = stock
 		self.featuresWrapper = FeaturesWrapper(self.stock)
 		self.initializeTimeDenoms(120, 250)
-		self.learningRate = 0.01	# just a default
-		# self.initializeConfidence()
+		self.learningRate = 0.75	# just a default
 
 	def initializeTimeDenoms(self, breakdown, limit):
 		self.timeDenoms = []
