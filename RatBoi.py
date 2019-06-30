@@ -10,8 +10,7 @@ class RatBoi(object):
 		self.stock = stock
 		self.featuresWrapper = FeaturesWrapper(self.stock)
 		self.initializeTimeDenoms(120, 250)
-		self.learningRate = 0.01	# just a default
-		# self.initializeConfidence()
+		self.learningRate = 0.75	# just a default
 
 	def initializeTimeDenoms(self, breakdown, limit):
 		self.timeDenoms = []
@@ -22,35 +21,6 @@ class RatBoi(object):
 
 	def initializeWeights(self):
 		self.weights = np.zeros((len(self.timeDenoms), self.featuresWrapper.getVectorSize()))
-
-	def initializeConfidence(self):
-		# self.positivePredictions = []
-		# self.negativePredictions = []
-		# for i in range(len(self.timeDenoms)):
-		# 	self.positivePredictions[i].append([])
-		# 	self.negativePredictions[i].append([])
-		self.positiveTracer = []
-		self.negativeTracer = []
-		for i in range(len(self.timeDenoms)):
-			self.positiveTracer.append({ 'total': 0, 'num': 0, 'avg': 0 })
-			self.negativeTracer.append({ 'total': 0, 'num': 0, 'avg': 0 })
-
-
-	def traceConfidence(self, i, predicted):
-		if (predicted > 0):
-			self.positiveTracer[i]['total'] += predicted
-			self.positiveTracer[i]['num'] += 1
-			self.positiveTracer[i]['avg'] = self.positiveTracer[i]['total'] // self.positiveTracer[i]['num']
-		else:
-			self.negativeTracer[i]['total'] += predicted
-			self.negativeTracer[i]['num'] += 1
-			self.negativeTracer[i]['avg'] = self.negativeTracer[i]['total'] // self.negativeTracer[i]['num']
-
-	def getConfidence(self, i, predicted):
-		if (predicted > 0):
-			return 1 if predicted > self.positiveTracer[i]['avg'] else 0
-		else:
-			return 1 if predicted < self.negativeTracer[i]['avg'] else 0
 
 	def train(self, startDate, endDate, iterations, learningRate):
 		self.initializeWeights()

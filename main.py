@@ -44,11 +44,11 @@ def main():
 	# 		stock.addValue(dataKey.split(" ")[1], item["4. close"], item["5. volume"], dataKey.split(" ")[0])
 	# 	stock.saveValues()
 
-	startDate = datetime.datetime(2018, 5, 12, 8)
-	endDate = startDate + datetime.timedelta(hours=72)
+	startDate = datetime.datetime(2018, 3, 2, 8)
+	endDate = startDate + datetime.timedelta(hours=96)
 
-	testStartDate = datetime.datetime(2018, 6, 12, 8)
-	testEndDate = testStartDate + datetime.timedelta(hours=72)
+	testStartDate = datetime.datetime(2018, 4, 6, 8)
+	testEndDate = testStartDate + datetime.timedelta(hours=24)
 
 	ratBoi = RatBoi(Stock("BTC-USD"))
 	ratBoi.train(startDate, endDate, iterations=3, learningRate=0.75)
