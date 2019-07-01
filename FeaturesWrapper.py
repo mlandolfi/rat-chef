@@ -7,7 +7,7 @@ class FeaturesWrapper(object):
 		super(FeaturesWrapper, self).__init__()
 		self.stock = stock
 		self.initializeMinuteTimes(5, 120)
-		self.initializeHourTimes(2, 24)
+		self.initializeHourTimes(2, 12)
 		# self.initializeDayTimes(1, 7)
 
 	# breakdown must be 1< 60, it's for the time interval
