@@ -2,8 +2,11 @@
 import json
 import datetime
 import statistics
+import math
+import numpy as np
 from cryptoDataCollection import getData
 from fractions import Fraction
+from scipy.stats import iqr
 
 #TODO: stop using statistics class for calculations, maybe pass currentList for populations?
 """ notes
@@ -39,8 +42,9 @@ class Stock(object):
 		self.popZScores = [0.0, 0.0] #(volatility, volume) -> z-score indicates how many standard deviations an element is from the mean, see website in notes for more info
 		self.popSkewness = [0.0, 0.0] #(volatility, volume) skewness is a measure of the asymmetry of the probability distribution of a real-valued random variable about its mean
 		self.popKurtosis = [0.0, 0.0] #(volatility, volume) the sharpness of the peak of a frequency-distribution curve.
-
-
+		self.popRange = [0.0, 0.0] #(volatility, volume) the lowest number in the data set subtracted by the highest
+		self.popIQR = [0.0, 0.0]
+		self.popCorrCoeff = 0.0  #correlation coefficient between values and volumes
 	""" ############################ Functions that work with our data files ############################ """
 	
 	""" adds a time and value into self.record if it isn't already in there,
@@ -211,8 +215,6 @@ class Stock(object):
 
 	"""From brownMath"""
 	def getSampleKurtosis(self, sampleList, sampleMean, sampleStdDev):
-		#m2, n are good, 
-		#m4 is not
 		n = len(sampleList)
 		m2 = sampleStdDev ** 4
 		if (m2 == 0):	return 0
@@ -248,38 +250,68 @@ class Stock(object):
 				tempEndDate = tempEndDate - timeDecrement
 		return retVal
 
+	#Get the range from
+	def getSampleRange(self, sampleList):
+		lowest = math.inf
+		highest = -math.inf
+		for x in sampleList:
+			if x < lowest:
+				lowest = x
+			if x > highest:
+				highest = x
+		if lowest == math.inf or highest == math.inf:
+			return 0.0
+		else:
+			return (highest - lowest)
+
+	#IQR is the difference between the 75th and 25th percentiles of data
+	def getSampleIQR(self, sampleList):
+		if len(sampleList) == 0:
+			return 0
+		
+		x = np.array(sampleList)
+		return iqr(x, rng=(25,75), interpolation='midpoint')
+
+	#Generic function to return correlation coefficient between two sets of data, (ex, volume and volatility)
+	def getSampleCorrCoef(self, sampleListOne, sampleListTwo):
+		if len(sampleListOne) == 0 or len(sampleListTwo) == 0:
+			return 0
+
+		x = np.array(sampleListOne)
+		y = np.array(sampleListTwo)
+		corrCoef = np.corrcoef(x, y)[1,0] #corrCoef returns a matrix
+		return corrCoef
 
 	def getAllSampleValues(self, index, endDate, numMinutes, numHours, numDays, interval):
 		retList = []
 		startDate = self.calculateStartDate(endDate, numMinutes, numHours, numDays)
 		sampleList = self.getSampleList(index, startDate, endDate, interval)
+		otherList = self.getSampleList(0, startDate, endDate, interval) if index == 1 else self.getSampleList(1, startDate, endDate, interval)
 
 		if len(sampleList) is 0:
-			return [0, 0, 0, 0, 0]
-		else:
-			#getting mean
-			mean = self.getSampleMean(sampleList)
+			return [0, 0, 0, 0, 0, 0, 0, 0]
+		
+		mean = self.getSampleMean(sampleList)
+		stdDev = self.getSampleStdDev(sampleList)
+		#getting z-scores from last recorded value, returns 0 if theres no data
+		x = self.obtainXForZScore(index, startDate, endDate, interval)
+		zScore = self.getSampleZScore(x, sampleList, mean, stdDev)
+		skewness = self.getSampleSkewness(sampleList, mean, stdDev)
+		kurtosis = self.getSampleKurtosis(sampleList, mean, stdDev)
+		rng = self.getSampleRange(sampleList)
+		iqr = self.getSampleIQR(sampleList)
+		corrCoef = self.getSampleCorrCoef(sampleList, otherList)
 
-			#getting standard dev
-			stdDev = self.getSampleStdDev(sampleList)
+		retList.append(mean)
+		retList.append(stdDev)
+		retList.append(zScore)
+		retList.append(skewness)
+		retList.append(kurtosis)
+		retList.append(rng)
+		retList.append(iqr)
+		retList.append(corrCoef)
 
-			#getting z-scores from last recorded value, returns 0 if theres no data
-			x = self.obtainXForZScore(index, startDate, endDate, interval)
-			zScore = self.getSampleZScore(x, sampleList, mean, stdDev)
-
-			#getting skewness
-			skewness = self.getSampleSkewness(sampleList, mean, stdDev)
-
-			#getting kurtosis
-			kurtosis = self.getSampleKurtosis(sampleList, mean, stdDev)
-
-			retList.append(mean)
-			retList.append(stdDev)
-			retList.append(zScore)
-			retList.append(skewness)
-			retList.append(kurtosis)
-
-			return retList
+		return retList
 
 	""" ############## Population Calculations ############# """
 
@@ -313,6 +345,7 @@ class Stock(object):
 		index is 0 if we are finding z-score of values (for volatility), 1 if z-score of volumes"""
 	def updatePopZScore(self, index, x):
 		#z = (X - μ) / σ, where X is latest recorded value, μ is the population mean, and σ is the standard deviation
+		self.updatePopList()
 		if self.popStdDevs[index] is 0:
 			print("Error: dividing by 0 using stdDevs[", index, "]")
 			self.popZScores[index] = 0
@@ -323,7 +356,7 @@ class Stock(object):
 		skewness of a normal distribution is 0
 		negative values for skewness indicate that the data is skewed left
 		positive values for skewness indicate that the data is skewed right
-		index is 0 if caluclating for volatility, 1 if calculating for volume"""
+		index is 0 if calculating for volatility, 1 if calculating for volume"""
 	def updatePopSkewness(self, index):
 		#skewness = m_3 / (m_2)^(3/2) ***m2 is just std deviation squared
 		#m_3 = sigma [ (x - x_bar)^3 ] / n
@@ -344,7 +377,7 @@ class Stock(object):
 	"""Requires that updateMeans/updatePopStdDev have both been called
 	standard normal distribution has a kurtosis of 0
 	positive kurtosis indicates a 'heavy-tailed' distribution and
-	negative kurtosis indicates a 'light-tailed' distrubution
+	negative kurtosis indicates a 'light-tailed' distribution
 	index is 0 if calculating for volatility, 1 if calc for volume"""
 	def updatePopKurtosis(self, index):
 		#Need to obtain the list of values for either volatility or volume for calcs
@@ -358,6 +391,36 @@ class Stock(object):
 		denom = self.popStdDevs[index] ** 4  ## denom = stdDev^4
 		self.popKurtosis[index] = (num / denom) - 3 #the 3 is so perfect normal distr = 0
 
+
+	def updatePopRange(self, index):
+		self.updatePopList()
+		lowest = math.inf
+		highest = -math.inf
+		for x in self.populationLists[index]:
+			if x < lowest:
+				lowest = x
+			if x > highest:
+				highest = x
+		if lowest == math.inf or highest == math.inf:
+			self.popRange[index] = 0.0
+		else:
+			self.popRange[index] = highest - lowest
+
+	#very slow
+	def updatePopIQR(self, index):
+		self.updatePopList()
+		
+		x = np.array(self.populationLists[index])
+		self.popIQR[index] = iqr(x, rng=(25,75), interpolation='midpoint')
+
+	#very slow
+	def updatePopCorrCoef(self):
+		self.updatePopList()
+
+		x = np.array(self.populationLists[0])
+		y = np.array(self.populationLists[1])
+		corrCoef = np.corrcoef(x, y)
+		self.popCorrCoeff = corrCoef
 
 	def __str__(self):
 		return self.ticker

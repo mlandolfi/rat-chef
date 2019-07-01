@@ -52,6 +52,7 @@ def main():
 	testStartDate = datetime.datetime(2018, 7, 8, 8)
 	testEndDate = testStartDate + datetime.timedelta(hours=72)
 
+
 	ratBoi = RatBoi(Stock("BTC-USD"))
 	ratBoi.train(startDate, endDate, iterations=1, learningRate=0.75)
 	# ratBoi.test(testStartDate, testEndDate)
