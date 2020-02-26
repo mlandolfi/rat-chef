@@ -307,9 +307,9 @@ class Stock(object):
 		retList.append(zScore)
 		retList.append(skewness)
 		retList.append(kurtosis)
-		retList.append(rng)
-		retList.append(iqr)
-		retList.append(corrCoef)
+		# retList.append(rng)
+		# retList.append(iqr)
+		# retList.append(corrCoef)
 
 		return retList
 

@@ -1,4 +1,5 @@
 import datetime
+import time
 from Stocks import Stock
 import numpy as np
 from FeaturesWrapper import FeaturesWrapper
@@ -31,6 +32,8 @@ class RatBoi(object):
 		for iteration in range(iterations):
 			self.run(startDate, endDate, testing=False)
 			self.learningRate *= self.learningRate
+			print ("SLEEPING")
+			time.sleep(20);
 
 	def test(self, startDate, endDate):
 		self.run(startDate, endDate, testing=True)
@@ -77,7 +80,7 @@ class RatBoi(object):
 				self.tracers[i].print()
 
 	def simulate(self, startDate, endDate, timeDenomIndex):
-		simBoi = RepeatPredictor(5, self.stock, 1000, 30, startDate, self.timeDenoms[timeDenomIndex])
+		simBoi = RepeatPredictor(3, self.stock, 1000, 20, startDate, self.timeDenoms[timeDenomIndex])
 		# simBoi = PMAPredictor(self.stock, 1000, 30, startDate, self.timeDenoms[timeDenomIndex])
 		print ("simulating for {} from {} to {}".format(self.stock.ticker, startDate, endDate))
 		currentTime = startDate

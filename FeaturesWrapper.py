@@ -9,6 +9,7 @@ class FeaturesWrapper(object):
 		self.initializeMinuteTimes(5, 120)
 		self.initializeHourTimes(2, 12)
 		# self.initializeDayTimes(1, 7)
+		self.numFeatures = 5
 
 	# breakdown must be 1< 60, it's for the time interval
 	def initializeMinuteTimes(self, breakdown, limit):
@@ -37,7 +38,7 @@ class FeaturesWrapper(object):
 		features = np.zeros(self.getVectorSize())
 		ticker = 0
 		# for each measurement
-		for i in range(5):
+		for i in range(self.numFeatures):
 			# now for each value
 			for j in range(len(self.values)):
 				# now compare it to each other value
@@ -49,7 +50,7 @@ class FeaturesWrapper(object):
 		return features
 
 	def getVectorSize(self):
-		return 5 * (1*(len(self.hourTimes)+len(self.minuteTimes))) ** 2
+		return self.numFeatures * (1*(len(self.hourTimes)+len(self.minuteTimes))) ** 2
 
 
 		

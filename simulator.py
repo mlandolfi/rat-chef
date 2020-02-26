@@ -14,7 +14,6 @@ class Order(object):
 		self.size = enterAmount / startPrice
 		self.lowerSellPrice = 0
 		self.upperSellPrice = 1000000
-		self.sellOnUp = False
 
 	def setPriceBounds(self, currentPrice, spread, bullPrediction=1, bearPrediction=1):
 		self.lowerSellPrice = currentPrice - (bearPrediction * spread)
@@ -26,26 +25,13 @@ class Order(object):
 	def getWorth(self, exitPrice):
 		return self.size*exitPrice
 
-	# def shouldExit(self, currentPrice, currentTime):
-	# 	if (currentTime >= self.exitTime):
-	# 		return True
-	# 	if (currentPrice >= self.upperSellPrice):
-	# 		return True
-	# 	# if (currentPrice <= self.lowerSellPrice):
-	# 	# 	return True
-	# 	return False
-
 	def shouldExit(self, currentPrice, currentTime):
-		if (self.sellOnUp and self.getProfits(currentPrice) > 0.0):
+		if (currentTime >= self.exitTime):
 			return True
-		elif (self.sellOnUp):
-			return True
-
 		if (currentPrice >= self.upperSellPrice):
 			return True
-		if (currentTime > self.exitTime):
-			self.sellOnUp = True
-
+		# if (currentPrice <= self.lowerSellPrice):
+		# 	return True
 		return False
 
 
@@ -106,8 +92,8 @@ class Simulator(object):
 				self.placeSellOrder(order.id)
 			else:
 				total += order.getWorth(self.stock.getValue(self.currentDate))
-		if (self.ordersUpSinceBuy(3)):
-			self.exitOrders(len(self.orderPool)//3)
+		# if (self.ordersUpSinceBuy(3)):
+		# 	self.exitOrders(len(self.orderPool)//3)
 		# print ("Simulator: scanned orders and counted ${} + ${} in cash = ${}".format(total, self.cash, total+self.cash))
 
 	def countOrders(self):

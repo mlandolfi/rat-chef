@@ -44,17 +44,17 @@ def main():
 	# 		stock.addValue(dataKey.split(" ")[1], item["4. close"], item["5. volume"], dataKey.split(" ")[0])
 	# 	stock.saveValues()
 
-	startDate = datetime.datetime(2018, 2, 4, 8) # bear?
-	# startDate = datetime.datetime(2018, 2, 17, 8) # bull?
-	# startDate = datetime.datetime(2018, 3, 6, 8)
-	endDate = startDate + datetime.timedelta(hours=24)
+	# startDate = datetime.datetime(2018, 2, 4, 8) # bull?
+	# startDate = datetime.datetime(2018, 2, 17, 8) # ?
+	startDate = datetime.datetime(2018, 3, 6, 8) # bear
+	endDate = startDate + datetime.timedelta(hours=100)
 
-	testStartDate = datetime.datetime(2018, 7, 8, 8)
-	testEndDate = testStartDate + datetime.timedelta(hours=72)
+	testStartDate = datetime.datetime(2018, 5, 12, 8)
+	testEndDate = testStartDate + datetime.timedelta(hours=168)
 
 
 	ratBoi = RatBoi(Stock("BTC-USD"))
-	ratBoi.train(startDate, endDate, iterations=1, learningRate=0.75)
+	ratBoi.train(startDate, endDate, iterations=3, learningRate=0.9)
 	# ratBoi.test(testStartDate, testEndDate)
 	ratBoi.simulate(testStartDate, testEndDate, 0)
 	return
